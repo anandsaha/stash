@@ -68,6 +68,11 @@ def graphSearch(problem, container):
     from util import Stack
     from util import Queue
 
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    print "Cost of actions is ", problem.getCostOfActions([Directions.SOUTH, Directions.WEST])
+
     # Solution - 
     solution = {}
 
@@ -86,11 +91,11 @@ def graphSearch(problem, container):
         explored.add(node)
 
         if problem.isGoalState(node):
-#print "Solution is ", solution[node]
+            print "Solution is ", solution[node]
             return solution[node]
 
         for s, a, c in problem.getSuccessors(node):
-#           print "."
+            print "."
             if s not in frontier.list and s not in explored:
                 frontier.push(s)
 
@@ -142,6 +147,70 @@ def breadthFirstSearch(problem):
     return graphSearch(problem, Queue())
 
 
+def uniformCostSearch(problem):
+    """Search the node of least total cost first."""
+    "*** YOUR CODE HERE ***"
+
+    from util import PriorityQueue
+    from util import Queue
+
+
+    # Frontier: We will use a Stack for DFS
+    frontier = PriorityQueue()
+
+    # We will use a set to prevent going to already visited nodes 
+    explored = set()
+
+    # Initialise Stack with initial state
+    frontier.push((problem.getStartState(), []), 0)
+ 
+    # Iterate through frontiers
+    while not frontier.isEmpty():
+
+        node, path = frontier.pop()
+        explored.add(node)
+
+        if problem.isGoalState(node):
+            print "Solution is ", path
+            for p in frontier.heap:
+                print p
+            return path
+
+        for s, a, c in problem.getSuccessors(node):
+
+            eff_path = []
+            eff_prio = 0
+
+            # Extract node(parent)'s details
+            for prio, count, (node1, path1) in frontier.heap:
+                if node1 == node:
+                    eff_path = list(path1)
+                    eff_prio = prio
+                    break
+            # Effective path and priority for this node 's'
+            eff_path.append(a)
+            eff_prio += c
+           
+            # Is 's' in frontier?
+            sInFrontier = False
+            sFrontierPrio = 0
+
+            for prio, count, (node1, path1) in frontier.heap:
+                if node1 == s:
+                    sInFrontier = True
+                    sFrontierPrio = prio 
+                    break
+
+            if sInFrontier is False and s not in explored:
+                print '-----', eff_path 
+                frontier.push((s, eff_path), eff_prio)
+            elif sInFrontier is True:
+                if eff_prio < sFrontierPrio: # Lesser the better
+                    frontier.push((s, eff_path), eff_prio)
+                
+    return None
+
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -149,44 +218,10 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-
-def optSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    from util import PriorityQueue
-
-    frontier = PriorityQueue()
-    start = problem.getStartState()
-    frontier.push((start, []), heuristic(start, (1,1)))
-    explored = []
-
-    while not frontier.isEmpty():
-        node, actions = frontier.pop()
-
-        if problem.isGoalState(node):
-            return actions
-
-        explored.append(node)
-
-        for pos, act, cost in problem.getSuccessors(node):
-            if not pos in explored:
-                new_actions = actions + [act]  
-                frontier.push((pos, new_actions), problem.getCostOfActions(new_actions) + heuristic(pos, (1,1)))
-
-
-def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-
-    return optSearch(problem)
-
-
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-
-    heuristic = util.manhattanDistance
-    return optSearch(problem, heuristic)
+    util.raiseNotDefined()
 
 
 # Abbreviations

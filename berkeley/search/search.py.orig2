@@ -142,6 +142,29 @@ def breadthFirstSearch(problem):
     return graphSearch(problem, Queue())
 
 
+def uniformCostSearch(problem):
+    """Search the node of least total cost first."""
+    "*** YOUR CODE HERE ***"
+    from util import PriorityQueue
+
+    frontier = PriorityQueue()
+    state = problem.getStartState()
+    frontier.push((state, []), 0)
+    explored = []
+
+    while not frontier.isEmpty():
+        node, actions = frontier.pop()
+        if problem.isGoalState(node):
+            return actions
+
+        explored.append(node)
+
+        for pos, act, steps in problem.getSuccessors(node):
+            if not pos in explored:
+                new_actions = actions + [act]
+                frontier.push((pos, new_actions), problem.getCostOfActions(new_actions))
+
+
 def nullHeuristic(state, problem=None):
     """
     A heuristic function estimates the cost from the current state to the nearest
@@ -149,44 +172,28 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-
-def optSearch(problem, heuristic=nullHeuristic):
+def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
     from util import PriorityQueue
 
     frontier = PriorityQueue()
-    start = problem.getStartState()
-    frontier.push((start, []), heuristic(start, (1,1)))
+    state = problem.getStartState()
+    frontier.push((state, []), util.manhattanDistance(state, (1,1)))
     explored = []
 
     while not frontier.isEmpty():
         node, actions = frontier.pop()
-
         if problem.isGoalState(node):
             return actions
 
         explored.append(node)
 
-        for pos, act, cost in problem.getSuccessors(node):
+        for pos, act, steps in problem.getSuccessors(node):
             if not pos in explored:
                 new_actions = actions + [act]  
-                frontier.push((pos, new_actions), problem.getCostOfActions(new_actions) + heuristic(pos, (1,1)))
+                frontier.push((pos, new_actions), problem.getCostOfActions(new_actions) + util.manhattanDistance(pos, (1,1)))
 
-
-def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-
-    return optSearch(problem)
-
-
-def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-
-    heuristic = util.manhattanDistance
-    return optSearch(problem, heuristic)
 
 
 # Abbreviations
