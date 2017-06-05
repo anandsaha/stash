@@ -1,0 +1,1 @@
+export PATH='/home/anand/bin:/home/anand/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/usr/local/cuda-8.0/bin:~/bin:/usr/local/cuda-8.0/bin:~/bin:/usr/local/cuda-8.0/bin:~/bin'
