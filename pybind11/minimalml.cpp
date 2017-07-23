@@ -4,13 +4,15 @@
 
 namespace py = pybind11;
 
-// Passing in an array of doubles
-// Assume two dimentions always
+/*
+   Assuming that it is 2D array
+   Assuming that it is Row Major layout
+ */
 void show(py::array_t<double> xs) {
 
     py::buffer_info info = xs.request();
     auto ptr = static_cast<double *>(info.ptr);
-
+/*
     printf("ndim = %zu\n", info.ndim);
     printf("itemsize = %zu\n", info.itemsize);
     printf("shape:\n");
@@ -19,9 +21,7 @@ void show(py::array_t<double> xs) {
     printf("strides:\n");
     for(int i = 0; i < info.strides.size(); i++)
         printf("%zu\n", info.strides[i]);
-
-//    for(size_t i = 0; i < (info.shape[0] * info.shape[1]); ++i)
-//        py::print(ptr[i]);
+*/
 
     for(size_t row = 0; row < info.shape[0]; row++) {
         for(size_t col = 0; col < info.shape[1]; col++) {
