@@ -28,14 +28,6 @@ class RobotArm(object):
         err, self.claw_handle = vrep.simxGetObjectHandle(self.clientID, 'uarm_Gripper_motor1Method2', 
                 vrep.simx_opmode_blocking)
 
-        # The bin should be static, it's location should not change
-        self.bin_position = self.get_position(self.bin_handle)
-        self.bin_top_position = self.bin_position # This location is on top of the bin
-        self.bin_top_position[2] *= 3 # This location is on top of the bin
-
-        # Cylinder height should be constant, else it has fallen
-        self.cylinder_height = self.get_position(self.cylinder_handle)[2]
-
 
     def __del__(self):
         print('Disconnecting from V-REP')
@@ -55,7 +47,7 @@ class RobotArm(object):
 
     def get_env_dimensions(self):
         # X min, max; Y min, max; Z min, max
-        dim = [[-0.330, -0.2], [-0.120, -0.10], [0, 0.2]]
+        dim = [[-0.330, -0.18], [-0.120, 0.3], [0, 0.2]]
         return dim
 
 

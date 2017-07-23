@@ -3,19 +3,21 @@ import numpy as np
 
 class RobotArmAgent(object):
 
-    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.1, q_init=1):
+    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=1):
     
         self.robot = robot
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+
+        self.tolerance = 0.01
             
         # The actions the agent can take - either goto some x,y,z position 
         # or engage/disengage claw
         dim = self.robot.get_env_dimensions()
-        x_range = np.arange(dim[0][0], dim[0][1], 0.002)
-        y_range = np.arange(dim[1][0], dim[1][1], 0.002)
-        z_range = np.arange(dim[2][0], dim[2][1], 0.002)
+        x_range = np.arange(dim[0][0], dim[0][1], self.tolerance)
+        y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
+        z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
 
         self.action_type1 = 'move_position'
         self.action_type2 = 'engage_claw'
@@ -40,15 +42,22 @@ class RobotArmAgent(object):
                     self.states.append([x, y, z])
         self.total_states = len(self.states)
 
-        self.q_table = np.full((self.total_states, self.total_actions), q_init)
         print("There are {0} actions.".format(self.total_actions))
         print("There are {0} states.".format(self.total_states))
 
+        self.q_table = np.full((self.total_states, self.total_actions), q_init)
 
     def init(self):
         self.robot.restart_sim()
         self.state_id = self.observe_state()
         self.claw_position = self.robot.get_position(self.robot.claw_handle) 
+
+        # The bin should be static, it's location should not change
+        self.bin_position = self.robot.get_position(self.robot.bin_handle)
+        self.bin_top_position = self.bin_position # This location is on top of the bin
+        self.bin_top_position[2] *= 3 # This location is on top of the bin
+        # Cylinder height should be constant, else it has fallen
+        self.cylinder_height = self.robot.get_position(self.robot.cylinder_handle)[2]
 
 
     def choose_action(self, state_id):
@@ -86,8 +95,9 @@ class RobotArmAgent(object):
 
         try:
             state_id_new = self.observe_state()
-        except RuntimeError:
-            return False
+        except RuntimeError as err:
+            print(err)
+            return True
 
         state_new = self.states[state_id_new]
         claw_position_new = self.robot.get_position(self.robot.claw_handle)
@@ -95,11 +105,14 @@ class RobotArmAgent(object):
 
         terminate = False
         reward = 0
-        if state_new[2] < self.robot.cylinder_height:
+        if np.abs(state_new[2] - self.cylinder_height) > self.tolerance:
             reward = -1 # Cylinder has fallen
+            print('Cylinder has fallen, terminating')
             terminate = True
-        elif self.distance(self.robot.bin_position, bin_position_new) > 0.001:
+        elif self.distance(self.bin_position, bin_position_new) > 0.1:
+            print(self.distance(self.bin_position, bin_position_new))
             reward = -1 # Bin was shifted
+            print('Bin has shifted, terminiting')
             terminate = True
         else:
             post_distance = self.distance(state_new, claw_position_new)
@@ -127,7 +140,7 @@ class RobotArmAgent(object):
 
         state_id = 0
         for state in self.states:
-            if abs(state[0] - pos[0]) <= 0.002 and abs(state[1] - pos[1]) <= 0.002 and abs(state[2] - pos[2]) <= 0.002:
+            if abs(state[0] - pos[0]) <= self.tolerance and abs(state[1] - pos[1]) <= self.tolerance and abs(state[2] - pos[2]) <= self.tolerance:
                 break
             state_id += 1
 
@@ -143,12 +156,12 @@ raa = RobotArmAgent(ra)
 episodes = 100
 
 while episodes > 0:
-
+    print ('Episode ', episodes)
     raa.init()
     i = 0
     while i < 100:
         terminate = raa.play()
-        if terminate:
+        if terminate == True:
             break
         i += 1
 
