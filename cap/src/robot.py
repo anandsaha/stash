@@ -25,12 +25,24 @@ class RobotArm(object):
         err, self.bin_handle = vrep.simxGetObjectHandle(self.clientID, 'uarm_bin', 
                 vrep.simx_opmode_blocking)
 
+        err, self.claw_handle = vrep.simxGetObjectHandle(self.clientID, 'uarm_Gripper_motor1Method2', 
+                vrep.simx_opmode_blocking)
+
         # The bin should be static, it's location should not change
         self.bin_position = self.get_position(self.bin_handle)
-        self.bin_position[2] *= 3 # This location is on top of the bin
+        self.bin_top_position = self.bin_position # This location is on top of the bin
+        self.bin_top_position[2] *= 3 # This location is on top of the bin
 
+        # Cylinder height should be constant, else it has fallen
+        self.cylinder_height = self.get_position(self.cylinder_handle)[2]
+
+
+    def __del__(self):
+        print('Disconnecting from V-REP')
+        self.disconnect()
 
     def disconnect(self):
+        self.stop_sim()
         vrep.simxGetPingTime(self.clientID)
         vrep.simxFinish(self.clientID)
 
@@ -43,7 +55,7 @@ class RobotArm(object):
 
     def get_env_dimensions(self):
         # X min, max; Y min, max; Z min, max
-        dim = [[-0.330, -0.2], [-0.120, -0.110], [0.03, 0.2]]
+        dim = [[-0.330, -0.2], [-0.120, -0.10], [0, 0.2]]
         return dim
 
 
@@ -84,13 +96,11 @@ class RobotArm(object):
     def start_sim(self):
         time.sleep(self.sleep_sec)
         vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot)
-        pass
 
 
     def stop_sim(self):
         time.sleep(self.sleep_sec)
         vrep.simxStopSimulation(self.clientID, vrep.simx_opmode_oneshot)
-        pass
 
 
     def restart_sim(self):
