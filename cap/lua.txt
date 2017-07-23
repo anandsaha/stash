@@ -1,0 +1,70 @@
+function threadFunction()
+    local maxVelocity=45*math.pi/180 -- rad/s
+    local maxAcceleration=40*math.pi/180 -- rad/s^2
+    local maxJerk=80*math.pi/180 -- rad/s^3
+    local maxTorque=10 -- kg*m^2/s^2
+
+    initialize(maxVelocity,maxAcceleration,maxJerk,maxTorque)
+
+    while simGetSimulationState()~=sim_simulation_advancing_abouttostop do
+        local p=simGetObjectPosition(pickupPart,-1)
+        local d=simGetObjectPosition(targetPart,-1)
+        local angles1=computeAnglesFromGripperPosition(p,0.07,-0.05)
+        enableGripper(false)
+        -- Synchronous operation of the individual joints:
+        moveToPosition(angles1,true)
+        local angles2=computeAnglesFromGripperPosition(p,0,0)
+        moveToPosition(angles2,true)
+        enableGripper(true)
+        simWait(2)
+        moveToPosition(angles1,true)
+        moveToPosition({90*math.pi/180,104*math.pi/180,60*math.pi/180,90*math.pi/180},true)
+        enableGripper(false)
+        moveToPosition(angles1,true)
+        moveToPosition(angles2,true)
+        enableGripper(false)
+        simWait(2)
+        moveToPosition(angles1,true)
+        moveToPosition({90*math.pi/180,104*math.pi/180,60*math.pi/180,90*math.pi/180},false)
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    while simGetSimulationState()~=sim_simulation_advancing_abouttostop do
+        local a=simGetObjectPosition(arm,-1)
+        a[3] = a[3] - 0.005
+        local ang=computeAnglesFromGripperPosition(a,0,0)
+        moveToPosition(ang,true)
+        --simWait(1) 
+--[[
+        local p=simGetObjectPosition(pickupPart,-1)
+        local d=simGetObjectPosition(targetPart,-1)
+        d[3] = d[3] + 0.1
+        local angles1=computeAnglesFromGripperPosition(p,0.07,-0.05)
+        enableGripper(false)
+        -- Synchronous operation of the individual joints:
+        moveToPosition(angles1,true)
+        local angles2=computeAnglesFromGripperPosition(p,0,0)
+        moveToPosition(angles2,true)
+        enableGripper(true)
+        simWait(2)              
+        local angles3=computeAnglesFromGripperPosition(d,0,0)
+        
+        moveToPosition(angles3,true)
+        enableGripper(false)
+        simWait(20)   
+]]--
+    end
+
