@@ -1,5 +1,6 @@
 from robot import RobotArm
 import numpy as np
+import time
 
 class RobotArmAgent(object):
 
@@ -19,7 +20,7 @@ class RobotArmAgent(object):
         y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
         z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
 
-        self.action_type1 = 'move_position'
+        self.action_type1 = 'move_claw'
         self.action_type2 = 'engage_claw'
         self.actions = []
  
@@ -34,7 +35,7 @@ class RobotArmAgent(object):
         self.total_actions = len(self.actions) 
 
         # The states the environment can be in, consists of:
-        # a. Position of the cylinder
+        # a. Position of the cylinder (the item to pick)
 
         self.states = []
         for x in x_range:
@@ -42,31 +43,67 @@ class RobotArmAgent(object):
                 for z in z_range:
                     self.states.append([x, y, z])
         self.total_states = len(self.states)
+        self.states.append([-100, -100, -100]) # This is to satisfy the condition when state_id is not found
 
         print("There are {0} actions.".format(self.total_actions))
         print("There are {0} states.".format(self.total_states))
 
         self.q_table = np.full((self.total_states, self.total_actions), q_init)
 
-        # Give the claw actions high initial values
+        # Give the claw engaging actions high initial values
         for index, val in enumerate(self.q_table):
-            self.q_table[index][0] = 10
-            self.q_table[index][1] = 10
+            self.q_table[index][0] = 2
+            self.q_table[index][1] = 2
+
 
     def init(self):
         self.robot.restart_sim()
+
         self.state_id = self.observe_state()
-        self.claw_position = self.robot.get_position(self.robot.claw_handle) 
+        #self.claw_position = self.robot.get_position(self.robot.claw_handle)
 
         # The bin should be static, it's location should not change
         self.bin_position = self.robot.get_position(self.robot.bin_handle)
-        self.bin_top_position = self.bin_position # This location is on top of the bin
+        self.bin_top_position = list(self.bin_position) # This location is on top of the bin
         self.bin_top_position[2] *= 3 # This location is on top of the bin
         # Cylinder height should be constant, else it has fallen
         self.cylinder_height = self.robot.get_position(self.robot.cylinder_handle)[2]
 
         self.claw_engaged = False
         self.action_type = self.action_type1
+
+        self.actionstate_prev = {}
+        self.actionstate_curr = {}
+
+    def get_cannonical_position(self, handle):
+        pos = self.robot.get_position(handle)
+
+        state_id = 0
+        for state in self.states:
+            if abs(state[0] - pos[0]) <= self.tolerance and abs(state[1] - pos[1]) <= self.tolerance and abs(state[2] - pos[2]) <= self.tolerance:
+                break
+            state_id += 1
+
+        return state_id
+
+
+    def update_actionstate(self, action_id):
+
+        self.actionstate_curr['action_id'] = action_id
+        self.actionstate_curr['state_id'] = self.observe_state()
+        self.actionstate_curr['cylinder_position'] = self.robot.get_position(self.robot.cylinder_handle)
+        self.actionstate_curr['bin_position'] = self.robot.get_position(self.robot.bin_handle)
+        self.actionstate_curr['claw_position'] = self.robot.get_position(self.robot.claw_handle)
+
+        self.actionstate_curr['claw_cylinder_distance'] = self.distance(self.actionstate_curr['claw_position'], self.actionstate_curr['cylinder_position'])
+        self.actionstate_curr['bin_cylinder_distance'] = self.distance(self.actionstate_curr['bin_position'], self.actionstate_curr['cylinder_position'])
+
+        # Is the cylinder inside the bin?
+        cylinder_bin_distance = self.distance(self.actionstate_curr['cylinder_position'], 
+                self.actionstate_curr['bin_position'])
+        self.actionstate_curr['cylinder_in_bin'] = False 
+        if cylinder_bin_distance < 0.05:
+            self.actionstate_curr['cylinder_in_bin'] = True
 
 
     def choose_action(self, state_id):
@@ -78,14 +115,15 @@ class RobotArmAgent(object):
 
 
     def do_action(self, action_id):
+
         action = self.actions[action_id]
         self.action_type = action[0]
 
         if action[0] == self.action_type1:
-            print('Moving to position: ', action[1])
+            print('Action: Moving claw')
             self.robot.goto_position(action[1])
         elif action[0] == self.action_type2:
-            print('Enabling claw: ', action[1])
+            print('Action: Engaging/Disengaging claw')
             self.robot.enable_claw(action[1])
             self.claw_engaged = action[1]
 
@@ -105,68 +143,45 @@ class RobotArmAgent(object):
 
 
     def observe_state(self):
-        pos = self.robot.get_position(self.robot.cylinder_handle)
-        print('State is at ', pos)
+        return self.get_cannonical_position(self.robot.cylinder_handle)
 
-        state_id = 0
-        for state in self.states:
-            if abs(state[0] - pos[0]) <= self.tolerance and abs(state[1] - pos[1]) <= self.tolerance and abs(state[2] - pos[2]) <= self.tolerance:
-                break
-            state_id += 1
-
-        if state_id == self.total_states:
-            raise RuntimeError("Bad state_id detected")  
-
-        return state_id
 
     def step_through(self):
-
-        pre_distance = self.distance(self.states[self.state_id], self.claw_position)
-        pre_claw_engaged = self.claw_engaged
-        pre_action_type = self.action_type
-
+        self.actionstate_prev = self.actionstate_curr
         action_id = self.choose_action(self.state_id)
         self.do_action(action_id)
-
-        try:
-            state_id_new = self.observe_state()
-        except RuntimeError as err:
-            print(err)
-            return True
-
+        self.update_actionstate(action_id)
+        state_id_new = self.actionstate_curr['state_id']
+        print("New State: ", state_id_new)
         state_new = self.states[state_id_new]
-        claw_position_new = self.robot.get_position(self.robot.claw_handle)
-        bin_position_new = self.robot.get_position(self.robot.bin_handle)
 
         terminate = False
         reward = 0
-        if np.abs(state_new[2] - self.cylinder_height) > self.tolerance:
-            reward = -1 # Cylinder has fallen
+        if state_id_new == self.total_states:
+            reward = -100
+            print('Reached invalid state')   
+            terminate = True
+        elif (state_new[2] + 0.01 - self.cylinder_height) < 0:
+            reward = -10
             print('Cylinder has fallen, terminating')
             terminate = True
-        elif self.distance(self.bin_position, bin_position_new) > 0.1:
-            print(self.distance(self.bin_position, bin_position_new))
-            reward = -1 # Bin was shifted
+        elif self.distance(self.bin_position, self.actionstate_curr['bin_position']) > 0.01:
+            print(self.bin_position)
+            print(self.actionstate_curr['bin_position'])
+            reward = -10
             print('Bin has shifted, terminiting')
             terminate = True
-        elif (pre_action_type == self.action_type) and (pre_action_type == self.action_type2) and  (pre_claw_engaged == self.claw_engaged):
-            print('Same claw actions repeated consecutively')
-            reward = -1 # It took two claw actions, and both were same
         else:
             #post_distance = self.distance(state_new, claw_position_new)
             #forward = pre_distance - post_distance
-            d1 = self.distance(state_new, bin_position_new)
-            d2 = self.distance(state_new, claw_position_new)
+            d1 = self.distance(state_new, self.actionstate_curr['bin_position'])
+            d2 = self.distance(state_new, self.actionstate_curr['claw_position'])
             reward = 5 - (d1 + d2) 
 
-        # update Q-table
+        # I was in this state, I took this action, I got this reward, and I reached the new state
         self.update_q(self.state_id, action_id, reward, state_id_new)
-
         self.state_id = state_id_new
-        self.claw_position = claw_position_new
-
         return terminate
-
 
 
 ra = RobotArm('127.0.0.1', 19997)
@@ -175,7 +190,7 @@ raa = RobotArmAgent(ra)
 episodes = 100
 
 while episodes > 0:
-    print ('Episode ', episodes)
+    print ('=============================================> Episode ', episodes)
     raa.init()
     i = 0
     while i < 100:
