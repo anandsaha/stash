@@ -22,14 +22,15 @@ class RobotArmAgent(object):
         self.action_type1 = 'move_position'
         self.action_type2 = 'engage_claw'
         self.actions = []
+ 
+        self.actions.append([self.action_type2, True])
+        self.actions.append([self.action_type2, False])
 
         for x in x_range:
             for y in y_range:
                 for z in z_range:
                     self.actions.append([self.action_type1, [x, y, z]])
         
-        self.actions.append([self.action_type2, True])
-        self.actions.append([self.action_type2, False])
         self.total_actions = len(self.actions) 
 
         # The states the environment can be in, consists of:
@@ -47,6 +48,11 @@ class RobotArmAgent(object):
 
         self.q_table = np.full((self.total_states, self.total_actions), q_init)
 
+        # Give the claw actions high initial values
+        for index, val in enumerate(self.q_table):
+            self.q_table[index][0] = 10
+            self.q_table[index][1] = 10
+
     def init(self):
         self.robot.restart_sim()
         self.state_id = self.observe_state()
@@ -59,6 +65,9 @@ class RobotArmAgent(object):
         # Cylinder height should be constant, else it has fallen
         self.cylinder_height = self.robot.get_position(self.robot.cylinder_handle)[2]
 
+        self.claw_engaged = False
+        self.action_type = self.action_type1
+
 
     def choose_action(self, state_id):
         if np.random.uniform() < self.epsilon:
@@ -70,12 +79,15 @@ class RobotArmAgent(object):
 
     def do_action(self, action_id):
         action = self.actions[action_id]
+        self.action_type = action[0]
+
         if action[0] == self.action_type1:
             print('Moving to position: ', action[1])
             self.robot.goto_position(action[1])
         elif action[0] == self.action_type2:
             print('Enabling claw: ', action[1])
             self.robot.enable_claw(action[1])
+            self.claw_engaged = action[1]
 
 
     def distance(self, pos1, pos2):
@@ -86,9 +98,32 @@ class RobotArmAgent(object):
         return np.sqrt(x2 + y2 + z2)
 
 
-    def play(self):
+    def update_q(self, state, action, reward, state_new):
+        q_sa = self.q_table[state, action]
+        td_error = reward + self.gamma * np.max(self.q_table[state_new]) - q_sa
+        self.q_table[state, action] = q_sa + self.alpha * td_error
+
+
+    def observe_state(self):
+        pos = self.robot.get_position(self.robot.cylinder_handle)
+        print('State is at ', pos)
+
+        state_id = 0
+        for state in self.states:
+            if abs(state[0] - pos[0]) <= self.tolerance and abs(state[1] - pos[1]) <= self.tolerance and abs(state[2] - pos[2]) <= self.tolerance:
+                break
+            state_id += 1
+
+        if state_id == self.total_states:
+            raise RuntimeError("Bad state_id detected")  
+
+        return state_id
+
+    def step_through(self):
 
         pre_distance = self.distance(self.states[self.state_id], self.claw_position)
+        pre_claw_engaged = self.claw_engaged
+        pre_action_type = self.action_type
 
         action_id = self.choose_action(self.state_id)
         self.do_action(action_id)
@@ -114,10 +149,15 @@ class RobotArmAgent(object):
             reward = -1 # Bin was shifted
             print('Bin has shifted, terminiting')
             terminate = True
+        elif (pre_action_type == self.action_type) and (pre_action_type == self.action_type2) and  (pre_claw_engaged == self.claw_engaged):
+            print('Same claw actions repeated consecutively')
+            reward = -1 # It took two claw actions, and both were same
         else:
-            post_distance = self.distance(state_new, claw_position_new)
-            forward = pre_distance - post_distance
-            reward = forward 
+            #post_distance = self.distance(state_new, claw_position_new)
+            #forward = pre_distance - post_distance
+            d1 = self.distance(state_new, bin_position_new)
+            d2 = self.distance(state_new, claw_position_new)
+            reward = 5 - (d1 + d2) 
 
         # update Q-table
         self.update_q(self.state_id, action_id, reward, state_id_new)
@@ -127,27 +167,6 @@ class RobotArmAgent(object):
 
         return terminate
 
-
-    def update_q(self, state, action, reward, state_new):
-        q_sa = self.q_table[state, action]
-        td_error = reward + self.gamma * np.max(self.q_table[state_new]) - q_sa
-        self.q_table[state, action] = q_sa + self.alpha * td_error
-
-
-    def observe_state(self):
-        pos = self.robot.get_position(self.robot.cylinder_handle)
-        print('State is at ', pos)
-
-        state_id = 0
-        for state in self.states:
-            if abs(state[0] - pos[0]) <= self.tolerance and abs(state[1] - pos[1]) <= self.tolerance and abs(state[2] - pos[2]) <= self.tolerance:
-                break
-            state_id += 1
-
-        if state_id == self.total_states:
-            raise RuntimeError("Bad state_id detected")  
-
-        return state_id
 
 
 ra = RobotArm('127.0.0.1', 19997)
@@ -160,7 +179,7 @@ while episodes > 0:
     raa.init()
     i = 0
     while i < 100:
-        terminate = raa.play()
+        terminate = raa.step_through()
         if terminate == True:
             break
         i += 1

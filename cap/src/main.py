@@ -1,9 +1,13 @@
 from robot import RobotArm
 import numpy as np 
+import time
 
 ra = RobotArm('127.0.0.1', 19997)
 
 ra.restart_sim()
+
+ra.goto_position([-0.17, -0.09, 0.25])
+time.sleep(5)
 
 ra.enable_claw(False)
 pos = ra.get_position(ra.cylinder_handle)

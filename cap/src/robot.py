@@ -13,8 +13,7 @@ class RobotArm(object):
         if self.clientID != -1:
             print('Successfully connected to V-REP')
         else:
-            print('Could not connect to V-REP')
-            return
+            raise RuntimeError('Could not connect to V-REP')
 
         self.sleep_sec=0.5
         self.main_object = 'uarm'
@@ -47,7 +46,7 @@ class RobotArm(object):
 
     def get_env_dimensions(self):
         # X min, max; Y min, max; Z min, max
-        dim = [[-0.330, -0.18], [-0.120, 0.3], [0, 0.2]]
+        dim = [[-0.38, -0.17], [-0.13, -0.09], [0, 0.25]] 
         return dim
 
 
