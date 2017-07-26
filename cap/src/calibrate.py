@@ -29,7 +29,7 @@ if posc[2] < posb[2]:
 
 
 print('[[{}, {}], [{}, {}], [{}, {}]]'.format(round(x1 - 0.01, 2), round(x2 + 0.01, 2), 
-            round(y1 - 0.01, 2), round(y2 + 0.01, 2), 0, round(z2, 2) * 5))
+            round(y1 - 0.01, 2), round(y2 + 0.01, 2), 0, round(z2, 2) * 4))
 
 ra.stop_sim()
 ra.disconnect()
