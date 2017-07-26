@@ -17,7 +17,7 @@ class RobotArm(object):
             raise RuntimeError('Could not connect to V-REP')
 
         self.sleep_sec = 0.4
-        self.sleep_sec_min = 0.2
+        self.sleep_sec_min = 0.3
         self.main_object = 'uarm'
         self.claw_enabled = False
 
@@ -61,6 +61,7 @@ class RobotArm(object):
     @staticmethod
     def get_env_dimensions():
         # X min, max; Y min, max; Z min, max
+        #dim = [[-0.32, -0.21], [-0.12, -0.08], [0, 0.12]]
         dim = [[-0.31, -0.22], [-0.11, -0.09], [0, 0.12]]
         return dim
 

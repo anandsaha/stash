@@ -1,5 +1,7 @@
 from robot import RobotArm
 import numpy as np
+import copy
+import os
 
 
 class RobotArmAgent(object):
@@ -60,6 +62,15 @@ class RobotArmAgent(object):
         self.state_id = None
         self.actionstate_prev = {}
         self.actionstate_curr = {}
+
+    def save_qtable(self):
+        print('Saving Q Table')
+        f = 'qtables/qtable.txt.npy'
+        try:
+            os.remove(f)
+        except:
+            pass
+        np.save(f, self.q_table)
 
     def init(self):
         self.robot.restart_sim()
@@ -128,7 +139,7 @@ class RobotArmAgent(object):
         self.q_table[state, action] = q_sa + self.alpha * td_error
 
     def observe_state(self):
-        return self.get_canonical_position(self.robot.cylinder_handle, self.robot.claw_enabled)
+        return self.get_canonical_position(self.robot.center_handle, self.robot.claw_enabled)
 
     def calculate_reward(self):
 
@@ -139,11 +150,11 @@ class RobotArmAgent(object):
             reward = -10
             print('Penalty: Reached invalid state, terminating')
             terminate = True
-        elif (state_new[2] + 0.01 - ra.cylinder_z_locus) < 0:
+        elif (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) < -0.005:
             reward = -10
             print('Penalty: Cylinder has fallen, terminating')
             terminate = True
-        elif self.distance(ra.bin_position, self.actionstate_curr['bin_position']) > 0.01:
+        elif self.distance(ra.bin_position, self.actionstate_curr['bin_position']) > 0.005:
             reward = -10
             print('Penalty: Bin has shifted, terminating')
             terminate = True
@@ -152,22 +163,40 @@ class RobotArmAgent(object):
                 and not self.actionstate_curr['cylinder_in_bin']:
             reward = -1
             print('Penalty: Claw is engaged but cylinder is not in claw')
+        elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
+            reward = -1
+            print('Penalty: Previous and current state is same')
+        elif self.robot.claw_enabled \
+                and self.actionstate_curr['is_cylinder_held'] \
+                and not self.actionstate_curr['cylinder_in_bin']:
+            if (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) > 0.001:
+                reward = 10
+                print('Reward: Claw could grab and lift the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
+            else:
+                reward = 5
+                print('Reward: Claw could grab the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
+        elif not self.robot.claw_enabled \
+                and not self.actionstate_curr['is_cylinder_held'] \
+                and self.actionstate_curr['cylinder_in_bin']:
+            reward = 100
+            print('Reward: Cylinder in bucket !!!!!!!!!!!!!!!!!!!!!!!!!')
+            terminate = True
         else:
             # post_distance = self.distance(state_new, claw_position_new)
             # forward = pre_distance - post_distance
             d1 = self.distance(state_new, self.actionstate_curr['bin_position'])
             d2 = self.distance(state_new, self.actionstate_curr['claw_position'])
             reward = 5 - (d1 + d2)
+            reward = -1
 
         return reward, terminate
 
     def step_through(self):
-        self.actionstate_prev = self.actionstate_curr
+        self.actionstate_prev = copy.deepcopy(self.actionstate_curr)
         action_id = self.choose_action(self.state_id)
         self.do_action(action_id)
         self.update_actionstate(action_id)
         state_id_new = self.actionstate_curr['state_id']
-        state_new = self.states[state_id_new]
 
         reward, terminate = self.calculate_reward()
 
@@ -180,6 +209,8 @@ class RobotArmAgent(object):
 ra = RobotArm('127.0.0.1', 19997)
 raa = RobotArmAgent(ra)
 
+
+"""
 raa.init()
 state = raa.states[raa.observe_state()]
 print(state[0])
@@ -196,7 +227,7 @@ ra.goto_position([-0.3, -0.11, 0.12])
 
 """
 
-episodes = 100
+episodes = 1000
 
 while episodes > 0:
     print('=============================================> Episode ', episodes)
@@ -208,5 +239,5 @@ while episodes > 0:
             break
         i += 1
 
+    raa.save_qtable()
     episodes -= 1
-"""
