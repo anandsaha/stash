@@ -3,6 +3,8 @@ import numpy as np
 import time
 import vrep
 
+
+
 def distance(pos1, pos2):
     x2 = np.square(pos1[0] - pos2[0])
     y2 = np.square(pos1[1] - pos2[1])
@@ -16,6 +18,18 @@ def status(ra):
 
 ra = RobotArm('127.0.0.1', 19997)
 ra.restart_sim()
+
+ra.get
+
+"""
+pos = ra.get_position(ra.cylinder_handle)
+print(pos)
+
+obj, pos = ra.get_all_object_positions()
+print(pos[obj.index(ra.cylinder_handle)])
+
+quit()
+
 pos = ra.get_position(ra.cylinder_handle)
 pos[2] += 0.025
 status(ra)
@@ -37,7 +51,7 @@ status(ra)
 ra.enable_claw(False)
 
 status(ra)
-"""
+
 #ra.get_gripper_status(vrep.simx_opmode_streaming)
 #ra.get_gripper_status(vrep.simx_opmode_buffer)
 ra.goto_position([-0.17, -0.09, 0.25])
