@@ -63,6 +63,10 @@ class RobotArmAgent(object):
         self.actionstate_prev = {}
         self.actionstate_curr = {}
 
+    def load_qtable(self):
+        f = 'qtables/qtable.txt.npy'
+        self.q_table = np.load(f)
+
     def save_qtable(self):
         print('Saving Q Table')
         f = 'qtables/qtable.txt.npy'
@@ -158,14 +162,20 @@ class RobotArmAgent(object):
             reward = -10
             print('Penalty: Bin has shifted, terminating')
             terminate = True
+        elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
+            reward = -1
+            print('Penalty: Previous and current state is same')
         elif self.robot.claw_enabled \
                 and not self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
             reward = -1
             print('Penalty: Claw is engaged but cylinder is not in claw')
-        elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
-            reward = -1
-            print('Penalty: Previous and current state is same')
+        elif len(self.actionstate_prev) > 0 \
+                and self.actionstate_prev['is_cylinder_held'] \
+                and not self.actionstate_curr['is_cylinder_held'] \
+                and not self.actionstate_curr['cylinder_in_bin']:
+            reward = -2
+            print('Penalty: Claw did not drop the cylinder in the bin')
         elif self.robot.claw_enabled \
                 and self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
@@ -207,7 +217,7 @@ class RobotArmAgent(object):
 
 
 ra = RobotArm('127.0.0.1', 19997)
-raa = RobotArmAgent(ra)
+raa = RobotArmAgent(ra, epsilon=0)
 
 
 """
@@ -228,7 +238,7 @@ ra.goto_position([-0.3, -0.11, 0.12])
 """
 
 episodes = 1000
-
+raa.load_qtable()
 while episodes > 0:
     print('=============================================> Episode ', episodes)
     raa.init()
