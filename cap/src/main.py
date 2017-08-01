@@ -3,68 +3,64 @@ import numpy as np
 import time
 import vrep
 
-
-
 def distance(pos1, pos2):
     x2 = np.square(pos1[0] - pos2[0])
     y2 = np.square(pos1[1] - pos2[1])
     z2 = np.square(pos1[2] - pos2[2])
     return np.sqrt(x2 + y2 + z2)
 
-def status(ra):
-    return
-    print("\nIs object held> ", ra.is_object_held())
+def status(title, ra):
+    print("")
+    print(title)
+    print("Is object held> ", ra.is_object_held())
     print("Is object in bin> ", ra.is_object_in_bin())
+    print("------------------------>")
 
 ra = RobotArm('127.0.0.1', 19997)
 ra.restart_sim()
 
-ra.get
-
-"""
 pos = ra.get_position(ra.cylinder_handle)
-print(pos)
+status("After getting position of cylinder", ra)
 
-obj, pos = ra.get_all_object_positions()
-print(pos[obj.index(ra.cylinder_handle)])
+pos[2] += 0.0305
 
-quit()
-
-pos = ra.get_position(ra.cylinder_handle)
-pos[2] += 0.025
-status(ra)
 ra.goto_position(pos)
-status(ra)
+status("After going to the cylinder", ra)
+
+ra.enable_grip(True)
+status("After enabling grip", ra)
+
 pos = ra.get_position(ra.cylinder_handle)
-status(ra)
-ra.enable_claw(True)
-status(ra)
+status("After fetching position", ra)
+
 pos[2] *= 6 
 ra.goto_position(pos)
-status(ra)
+status("After lifting", ra)
+
 pos = ra.get_position(ra.bin_handle)
-status(ra)
+status("After getting position of bin", ra)
+
 pos[2] *= 4
 ra.goto_position(pos)
+status("After going to bin top", ra)
 
-status(ra)
-ra.enable_claw(False)
+ra.enable_grip(False)
+status("After releasing", ra)
 
-status(ra)
-
+"""
 #ra.get_gripper_status(vrep.simx_opmode_streaming)
 #ra.get_gripper_status(vrep.simx_opmode_buffer)
 ra.goto_position([-0.17, -0.09, 0.25])
 time.sleep(5)
 
-ra.enable_claw(False)
+ra.enable_grip(False)
 pos = ra.get_position(ra.cylinder_handle)
 ra.goto_position(pos)
-ra.enable_claw(True)
+ra.enable_grip(True)
 pos[2] *= 5 
 ra.goto_position(pos)
 ra.goto_position(ra.bin_position) 
-ra.enable_claw(False)
+ra.enable_grip(False)
 
 i = 0
 dim = ra.get_env_dimensions()
@@ -81,6 +77,5 @@ while i < 100:
 
 
 ra.stop_sim()
-
 ra.disconnect()
 
