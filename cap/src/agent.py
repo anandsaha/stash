@@ -7,7 +7,7 @@ from utility import log_and_display
 
 
 class RobotArmAgent(object):
-    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=-1.0):
+    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=0.0):
 
         self.robot = robot
         self.alpha = alpha
@@ -61,14 +61,15 @@ class RobotArmAgent(object):
 
         # Give the claw engaging actions slight higher initial values
         for index, val in enumerate(self.q_table):
-            if not self.states[index][3]:
-                self.q_table[index][0] += 0.
+            if not self.states[index][3]:  # If grip not enabled
+                self.q_table[index][0] += 0.2  # Encourage grip enable
             else:
-                self.q_table[index][1] += 0.
+                self.q_table[index][1] += 0.2
 
         self.state_id = None
         self.actionstate_prev = {}
         self.actionstate_curr = {}
+        self.episode_object_gripped = False
 
     def load_qtable(self):
         f = 'qtables/qtable.txt.npy'
@@ -89,6 +90,7 @@ class RobotArmAgent(object):
         self.state_id = self.observe_state()
         self.actionstate_prev = {}
         self.actionstate_curr = {}
+        self.episode_object_gripped = False
 
     def get_canonical_position(self, handle, gripper_holding_object):
         pos = self.robot.get_position(handle)
@@ -166,9 +168,9 @@ class RobotArmAgent(object):
             reward = -10
             log_and_display('Penalty: Bin has shifted, terminating')
             terminate = True
-        #elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
-        #    reward = -10
-        #    log_and_display('Penalty: Previous and current state is same')
+        elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
+            reward = -5
+            log_and_display('Penalty: Previous and current state is same')
         elif self.robot.gripper_enabled \
                 and not self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
@@ -180,22 +182,27 @@ class RobotArmAgent(object):
                 and not self.actionstate_curr['cylinder_in_bin']:
             reward = -1
             log_and_display('Penalty: Claw did not drop the cylinder in the bin')
-        elif self.robot.gripper_enabled \
+        elif not self.episode_object_gripped and self.robot.gripper_enabled \
                 and self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
+            self.episode_object_gripped = True
+            reward = 50
+            log_and_display('Reward: Claw could grab the cylinder for first time !!!!!!!!!!!!!!!!!!!!!!!!!')
+            """
             if (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) > self.tolerance:
                 reward = 10
                 log_and_display('Reward: Claw could grab *and lift* the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
             else:
                 reward = 5
                 log_and_display('Reward: Claw could grab the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
+            """
         elif self.actionstate_curr['cylinder_in_bin']:
             reward = 100
             log_and_display('Reward: Cylinder in bucket !!!!!!!!!!!!!!!!!!!!!!!!!')
             terminate = True
             is_pass = True
         else:
-            reward = -2
+            reward = -1
 
         return reward, terminate, is_pass
 
@@ -215,7 +222,7 @@ class RobotArmAgent(object):
 
 
 ra = RobotArm('127.0.0.1', 19997)
-raa = RobotArmAgent(ra, epsilon=0.2, q_init=-1.0)
+raa = RobotArmAgent(ra, epsilon=0.2)
 episodes = 20000
 episode_num = 0
 raa.load_qtable()
