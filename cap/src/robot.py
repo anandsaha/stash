@@ -63,7 +63,7 @@ class RobotArm(object):
         vrep.simxFinish(self.clientID)
 
     def update_all_object_positions(self):
-        time.sleep(self.sleep_sec_min)
+        time.sleep(self.sleep_sec)
         err, handles, ints, floats, strings = vrep.simxGetObjectGroupData(self.clientID,
                                                                           vrep.sim_appobj_object_type, 3,
                                                                           vrep.simx_opmode_blocking)
@@ -77,6 +77,7 @@ class RobotArm(object):
         pos = self.object_positions[self.objects.index(handle)].tolist()
         for idx, val in enumerate(pos):
             pos[idx] = utility.rnd(pos[idx])
+        pos[2] += utility.rnd(0.01)  # TODO Positional correction, revisit
         return pos
 
     @staticmethod
@@ -178,7 +179,7 @@ class RobotArm(object):
         y = np.abs(pos_cylinder[1] - pos_gripper[1])
         z = np.abs(pos_cylinder[2] - pos_gripper[2])
 
-        if x <= 0.007 and y <= 0.003 and z < (self.cylinder_height / 2) and self.gripper_enabled:
+        if x <= 0.01 and y == 0.0 and z <= 0.02 and self.gripper_enabled:
             return True
 
         return False

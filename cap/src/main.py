@@ -2,6 +2,7 @@ from robot import RobotArm
 import numpy as np 
 import time
 import vrep
+import utility
 
 def distance(pos1, pos2):
     x2 = np.square(pos1[0] - pos2[0])
@@ -15,6 +16,7 @@ def status(title, ra):
     print("Is object held> ", ra.is_object_held())
     print("Is object in bin> ", ra.is_object_in_bin())
     print("------------------------>")
+    time.sleep(2)
 
 ra = RobotArm('127.0.0.1', 19997)
 ra.restart_sim()
@@ -22,7 +24,7 @@ ra.restart_sim()
 pos = ra.get_position(ra.cylinder_handle)
 status("After getting position of cylinder", ra)
 
-pos[2] += 0.0305
+pos[0] += utility.rnd(0.0)
 
 ra.goto_position(pos)
 status("After going to the cylinder", ra)

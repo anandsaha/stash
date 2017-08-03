@@ -3,10 +3,11 @@ import numpy as np
 import copy
 import os
 import utility
+from utility import log_and_display
 
 
 class RobotArmAgent(object):
-    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=-1):
+    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=-1.0):
 
         self.robot = robot
         self.alpha = alpha
@@ -53,17 +54,17 @@ class RobotArmAgent(object):
         self.total_states = len(self.states)
         self.invalid_states_index = self.total_states - 1
 
-        print("There are {0} actions.".format(self.total_actions))
-        print("There are {0} states.".format(self.total_states))
+        log_and_display("There are {0} actions.".format(self.total_actions))
+        log_and_display("There are {0} states.".format(self.total_states))
 
         self.q_table = np.full((self.total_states, self.total_actions), q_init)
 
         # Give the claw engaging actions slight higher initial values
         for index, val in enumerate(self.q_table):
             if not self.states[index][3]:
-                self.q_table[index][0] += 1
+                self.q_table[index][0] += 0.
             else:
-                self.q_table[index][1] += 1
+                self.q_table[index][1] += 0.
 
         self.state_id = None
         self.actionstate_prev = {}
@@ -81,6 +82,7 @@ class RobotArmAgent(object):
         np.save(f, self.q_table)
 
     def init(self):
+        log_and_display('Initializing episode')
         self.robot.restart_sim()
         # Place the arm in a well defined position within the state space
         self.robot.goto_position([utility.rnd(-0.30), utility.rnd(-0.10), utility.rnd(0.14)])
@@ -100,7 +102,7 @@ class RobotArmAgent(object):
                     return state_id
             state_id += 1
 
-        print('Position was invalid ', pos)
+        log_and_display('--------------------> Position was invalid ' + str(pos))
         return self.invalid_states_index  # The last state, which is the invalid state, will get returned
 
     def update_actionstate(self, action_id):
@@ -128,18 +130,19 @@ class RobotArmAgent(object):
         action = self.actions[action_id]
 
         if action[0] == self.action_type1:
-            print('Action: Moving claw', action[1])
+            log_and_display('Action: Moving claw ' + str(action[1]))
             self.robot.goto_position(action[1])
         elif action[0] == self.action_type2:
-            print('Action: Engaging/Disengaging claw', action[1])
+            log_and_display('Action: Engaging/Disengaging claw' + str(action[1]))
             self.robot.enable_grip(action[1])
 
     def update_q_table(self, state, action, reward, state_new):
-        print("Reward: ", reward)
         q_sa = self.q_table[state, action]
         td_error = reward + self.gamma * np.max(self.q_table[state_new]) - q_sa
         self.q_table[state, action] = q_sa + self.alpha * td_error
-        #print ("Q-Value:", state, action, self.q_table[state, action])
+        msg = "Q-Value: {}, {}, {}, {}, {}, {}".format(state, action, q_sa, td_error, (q_sa + self.alpha * td_error),
+                                                       self.q_table[state, action])
+        log_and_display(msg)
 
     def observe_state(self):
         return self.get_canonical_position(self.robot.gripper_handle, self.robot.is_object_held())
@@ -153,46 +156,46 @@ class RobotArmAgent(object):
 
         if state_new == self.invalid_state:
             reward = -10
-            print('Penalty: Reached invalid state, terminating')
+            log_and_display('Penalty: Reached invalid state, terminating')
             terminate = True
-        elif (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) < (-1 * self.tolerance):
+        elif (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) <= (-1 * self.tolerance):
             reward = -10
-            print('Penalty: Cylinder has fallen, terminating')
+            log_and_display('Penalty: Cylinder has fallen, terminating')
             terminate = True
         elif utility.distance(ra.bin_position, self.actionstate_curr['bin_position']) > self.tolerance:
             reward = -10
-            print('Penalty: Bin has shifted, terminating')
+            log_and_display('Penalty: Bin has shifted, terminating')
             terminate = True
-        elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
-            reward = -1
-            print('Penalty: Previous and current state is same')
+        #elif len(self.actionstate_prev) > 0 and self.actionstate_curr['state'] == self.actionstate_prev['state']:
+        #    reward = -10
+        #    log_and_display('Penalty: Previous and current state is same')
         elif self.robot.gripper_enabled \
                 and not self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
             reward = -1
-            print('Penalty: Claw is engaged but cylinder is not in claw')
+            log_and_display('Penalty: Claw is engaged but cylinder is not in claw')
         elif len(self.actionstate_prev) > 0 \
                 and self.actionstate_prev['is_cylinder_held'] \
                 and not self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
             reward = -1
-            print('Penalty: Claw did not drop the cylinder in the bin')
+            log_and_display('Penalty: Claw did not drop the cylinder in the bin')
         elif self.robot.gripper_enabled \
                 and self.actionstate_curr['is_cylinder_held'] \
                 and not self.actionstate_curr['cylinder_in_bin']:
             if (ra.get_position(ra.cylinder_handle)[2] - ra.cylinder_z_locus) > self.tolerance:
                 reward = 10
-                print('Reward: Claw could grab *and lift* the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
+                log_and_display('Reward: Claw could grab *and lift* the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
             else:
                 reward = 5
-                print('Reward: Claw could grab the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
+                log_and_display('Reward: Claw could grab the cylinder !!!!!!!!!!!!!!!!!!!!!!!!!')
         elif self.actionstate_curr['cylinder_in_bin']:
             reward = 100
-            print('Reward: Cylinder in bucket !!!!!!!!!!!!!!!!!!!!!!!!!')
+            log_and_display('Reward: Cylinder in bucket !!!!!!!!!!!!!!!!!!!!!!!!!')
             terminate = True
             is_pass = True
         else:
-            reward = -1
+            reward = -2
 
         return reward, terminate, is_pass
 
@@ -212,13 +215,13 @@ class RobotArmAgent(object):
 
 
 ra = RobotArm('127.0.0.1', 19997)
-raa = RobotArmAgent(ra, epsilon=0.2, q_init=-1)
+raa = RobotArmAgent(ra, epsilon=0.2, q_init=-1.0)
 episodes = 20000
 episode_num = 0
 raa.load_qtable()
-
+log_and_display("%%%%%%%%%%%%%%%%%%%%%%%%% Run starts %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
 while episodes > 0:
-    print('=============================================> Episode ', episodes)
+    log_and_display('=============================================> Episode ' + str(episodes))
     raa.init()
     i = 0
     is_pass = False

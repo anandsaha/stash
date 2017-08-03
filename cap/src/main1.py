@@ -4,6 +4,8 @@ import time
 import vrep
 import decimal
 import utility
+import decimal
+
 
 def status(title, ra):
     print("")
@@ -15,15 +17,17 @@ def status(title, ra):
 ra = RobotArm('127.0.0.1', 19997)
 ra.restart_sim()
 
-d = ra.get_env_dimensions()
-x = d[0]
-y = d[1]
-z = d[2]
-for x1 in x:
-    for y1 in y:
-        for z1 in z:
-            ra.goto_position([x1, y1, z1])
-            time.sleep(1)
+pos = ra.get_position(ra.cylinder_handle)
+pos[2] += utility.rnd(0.02)
+ra.goto_position(pos)
+status("", ra)
+time.sleep(2)
+ra.enable_grip(True)
+status("", ra)
+time.sleep(2)
+pos[2] *= 6
+ra.goto_position(pos)
+time.sleep(2)
 
 """
 print(ra.get_env_dimensions())
