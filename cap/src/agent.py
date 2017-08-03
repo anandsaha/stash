@@ -6,14 +6,14 @@ import utility
 
 
 class RobotArmAgent(object):
-    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=1):
+    def __init__(self, robot, alpha=0.1, gamma=0.9, epsilon=0.2, q_init=-1):
 
         self.robot = robot
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
 
-        self.tolerance = 0.005
+        self.tolerance = utility.rnd(0.01)
 
         # The actions the agent can take - either goto some x,y,z position 
         # or engage/disengage claw
@@ -33,14 +33,15 @@ class RobotArmAgent(object):
         self.actions.append([self.action_type2, True])
         self.actions.append([self.action_type2, False])
 
-        for x in x_range:
-            for y in y_range:
-                for z in z_range:
+        for x in x_range[1:-1]:
+            for y in y_range[1:-1]:
+                for z in z_range[1:-1]:
                     self.actions.append([self.action_type1, [x, y, z]])
 
         self.total_actions = len(self.actions)
 
-        # The states the environment can be in, is made up of all the locations and if gripper is engaged/disengaged
+        # The states the environment can be in, is made up of all the locations and if gripper is holding
+        # object or not
         self.states = []
         for x in x_range:
             for y in y_range:
@@ -57,14 +58,12 @@ class RobotArmAgent(object):
 
         self.q_table = np.full((self.total_states, self.total_actions), q_init)
 
-        # Give the claw engaging actions high initial values
+        # Give the claw engaging actions slight higher initial values
         for index, val in enumerate(self.q_table):
             if not self.states[index][3]:
-                self.q_table[index][0] = 2
-                self.q_table[index][1] = -1
+                self.q_table[index][0] += 1
             else:
-                self.q_table[index][0] = -1
-                self.q_table[index][1] = 2
+                self.q_table[index][1] += 1
 
         self.state_id = None
         self.actionstate_prev = {}
@@ -76,7 +75,6 @@ class RobotArmAgent(object):
             self.q_table = np.load(f)
 
     def save_qtable(self):
-        print('Saving Q Table')
         f = 'qtables/qtable.txt.npy'
         if os.path.exists(f):
             os.remove(f)
@@ -84,22 +82,25 @@ class RobotArmAgent(object):
 
     def init(self):
         self.robot.restart_sim()
+        # Place the arm in a well defined position within the state space
+        self.robot.goto_position([utility.rnd(-0.30), utility.rnd(-0.10), utility.rnd(0.14)])
         self.state_id = self.observe_state()
         self.actionstate_prev = {}
         self.actionstate_curr = {}
 
-    def get_canonical_position(self, handle, gripper_enabled):
+    def get_canonical_position(self, handle, gripper_holding_object):
         pos = self.robot.get_position(handle)
 
         state_id = 0
         for state in self.states:
-            if abs(state[0] - pos[0]) <= self.tolerance \
-                    and abs(state[1] - pos[1]) <= self.tolerance \
-                    and abs(state[2] - pos[2]) <= self.tolerance \
-                    and state[3] == gripper_enabled:
-                return state_id
+            if abs(state[0] - pos[0]) < self.tolerance \
+                    and abs(state[1] - pos[1]) < self.tolerance \
+                    and abs(state[2] - pos[2]) < self.tolerance:
+                if state[3] == gripper_holding_object:
+                    return state_id
             state_id += 1
 
+        print('Position was invalid ', pos)
         return self.invalid_states_index  # The last state, which is the invalid state, will get returned
 
     def update_actionstate(self, action_id):
@@ -127,10 +128,10 @@ class RobotArmAgent(object):
         action = self.actions[action_id]
 
         if action[0] == self.action_type1:
-            print('Action: Moving claw')
+            print('Action: Moving claw', action[1])
             self.robot.goto_position(action[1])
         elif action[0] == self.action_type2:
-            print('Action: Engaging/Disengaging claw')
+            print('Action: Engaging/Disengaging claw', action[1])
             self.robot.enable_grip(action[1])
 
     def update_q_table(self, state, action, reward, state_new):
@@ -138,9 +139,10 @@ class RobotArmAgent(object):
         q_sa = self.q_table[state, action]
         td_error = reward + self.gamma * np.max(self.q_table[state_new]) - q_sa
         self.q_table[state, action] = q_sa + self.alpha * td_error
+        #print ("Q-Value:", state, action, self.q_table[state, action])
 
     def observe_state(self):
-        return self.get_canonical_position(self.robot.gripper_handle, self.robot.gripper_enabled)
+        return self.get_canonical_position(self.robot.gripper_handle, self.robot.is_object_held())
 
     def calculate_reward(self):
 
@@ -190,9 +192,6 @@ class RobotArmAgent(object):
             terminate = True
             is_pass = True
         else:
-            #d1 = utility.distance(state_new, self.actionstate_curr['bin_position'])
-            #d2 = utility.distance(state_new, self.actionstate_curr['claw_position'])
-            #reward = 5 - (d1 + d2)
             reward = -1
 
         return reward, terminate, is_pass
@@ -213,8 +212,8 @@ class RobotArmAgent(object):
 
 
 ra = RobotArm('127.0.0.1', 19997)
-raa = RobotArmAgent(ra)
-episodes = 10000
+raa = RobotArmAgent(ra, epsilon=0.2, q_init=-1)
+episodes = 20000
 episode_num = 0
 raa.load_qtable()
 

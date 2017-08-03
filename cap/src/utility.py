@@ -1,4 +1,5 @@
 import numpy as np
+import decimal
 
 
 def distance(pos1, pos2):
@@ -7,3 +8,7 @@ def distance(pos1, pos2):
     z2 = np.square(pos1[2] - pos2[2])
 
     return np.sqrt(x2 + y2 + z2)
+
+
+def rnd(val, to='0.01'):
+    return decimal.Decimal(val).quantize(decimal.Decimal(to), decimal.ROUND_HALF_DOWN)

@@ -20,6 +20,7 @@ class RobotArm(object):
         # Some artificial delays to let V-REP stabilize after an action
         self.sleep_sec = 0.4
         self.sleep_sec_min = 0.3
+
         # id of the Robot Arm in V-REP environment
         self.main_object = 'uarm'
         # Initial state of the Gripper
@@ -40,19 +41,6 @@ class RobotArm(object):
                                                             vrep.simx_opmode_blocking)
         if err != vrep.simx_return_ok:
             raise RuntimeError("Could not get handle to the Gripper object. Halting program.")
-
-        """
-        err, self.sensor_handle = vrep.simxGetObjectHandle(self.clientID, 'uarmGripper_fakeGrippingSensor',
-                                                           vrep.simx_opmode_blocking)
-        if err != vrep.simx_return_ok:
-            raise RuntimeError("Could not get handle to the Sensor object. Halting program.")
-
-
-        err, self.center_handle = vrep.simxGetObjectHandle(self.clientID, 'uarmGripper_motor1Method2',
-                                                           vrep.simx_opmode_blocking)
-        if err != vrep.simx_return_ok:
-            raise RuntimeError("Could not get handle to the Center of Gripper object. Halting program.")
-        """
 
         # Distance between cylinder and bin when former is inside later
         self.cylinder_bin_distance = 0.013
@@ -77,8 +65,8 @@ class RobotArm(object):
     def update_all_object_positions(self):
         time.sleep(self.sleep_sec_min)
         err, handles, ints, floats, strings = vrep.simxGetObjectGroupData(self.clientID,
-                                                            vrep.sim_appobj_object_type, 3,
-                                                            vrep.simx_opmode_blocking)
+                                                                          vrep.sim_appobj_object_type, 3,
+                                                                          vrep.simx_opmode_blocking)
 
         positions = np.array(floats)
         self.objects = handles
@@ -86,13 +74,19 @@ class RobotArm(object):
 
     def get_position(self, handle):
         # self.object_positions is updated by the update_all_object_positions() method
-        return self.object_positions[self.objects.index(handle)].tolist()
+        pos = self.object_positions[self.objects.index(handle)].tolist()
+        for idx, val in enumerate(pos):
+            pos[idx] = utility.rnd(pos[idx])
+        return pos
 
     @staticmethod
     def get_env_dimensions():
         # Dimensions of the virtual space within which the arm should maneuver
         # X min, max; Y min, max; Z min, max
-        dim = [[-0.31, -0.22], [-0.11, -0.09], [0, 0.12]]
+        # dim = [[-0.32, -0.23], [-0.11, -0.09], [0, 0.15]]
+        dim = [[utility.rnd(-0.32), utility.rnd(-0.18)],
+               [utility.rnd(-0.12), utility.rnd(-0.07)],
+               [utility.rnd(-0.01), utility.rnd(0.16)]]
         return dim
 
     def goto_position(self, pos):
@@ -194,17 +188,3 @@ class RobotArm(object):
         pos_cyl = self.get_position(self.cylinder_handle)
 
         return utility.distance(pos_bin, pos_cyl) < self.cylinder_bin_distance
-
-    """
-    def get_gripper_status(self, mode):
-        time.sleep(self.sleep_sec_min)
-
-        err, state, point, handle, vector = vrep.simxReadProximitySensor(self.clientID,
-                                                                         self.sensor_handle, mode)
-
-        if err != vrep.simx_return_ok:
-            print("Could not get gripper status")
-            return
-
-        print(state)
-    """
