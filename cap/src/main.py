@@ -6,8 +6,8 @@ vrep_ip = '127.0.0.1'
 vrep_port = 19997
 
 ra = RobotArm(vrep_ip, vrep_port)
-raa = RobotArmAgent(ra, learn_rate=0.5, discount=0.9, epsilon=0.2, q_init_val=0.0)
-episodes = 20000
+raa = RobotArmAgent(ra, learn_rate=0.5, discount=0.9, epsilon=0., q_init_val=0.0)
+episodes = 100
 episode_num = 0
 raa.load_qtable()
 log_and_display("%%%%%%%%%%%%%%%%%%%%%%%%% Run starts %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
