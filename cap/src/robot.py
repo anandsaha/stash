@@ -43,6 +43,7 @@ class RobotArm(object):
             raise RuntimeError("Could not get handle to the Gripper object. Halting program.")
 
         # Distance between cylinder and bin when former is inside later
+        # This was measured after putting the cylinder in the bin
         self.cylinder_bin_distance = 0.013
 
         # Various values, to be set in the start_sim() function, because their values can be obtained
@@ -77,25 +78,24 @@ class RobotArm(object):
         pos = self.object_positions[self.objects.index(handle)].tolist()
         for idx, val in enumerate(pos):
             pos[idx] = utility.rnd(pos[idx])
-        pos[2] += utility.rnd(0.01)  # TODO Positional correction, revisit
+        pos[2] += utility.rnd(0.01)  # TODO Positional correction for Z Axis, revisit
         return pos
 
     @staticmethod
     def get_env_dimensions():
         # Dimensions of the virtual space within which the arm should maneuver
         # X min, max; Y min, max; Z min, max
-        # dim = [[-0.32, -0.23], [-0.11, -0.09], [0, 0.15]]
-        dim = [[utility.rnd(-0.32), utility.rnd(-0.18)],
+        dim = [[utility.rnd(-0.32), utility.rnd(-0.20)],
                [utility.rnd(-0.12), utility.rnd(-0.07)],
-               [utility.rnd(-0.01), utility.rnd(0.16)]]
+               [utility.rnd(0.0), utility.rnd(0.18)]]
         return dim
 
     def goto_position(self, pos):
         time.sleep(self.sleep_sec)
 
         pos_adjusted = list(pos)
-        pos_adjusted.append(0.0)
-        pos_adjusted.append(0.0)
+        pos_adjusted.append(0.0)  # Required by V-REP
+        pos_adjusted.append(0.0)  # Required by V-REP
 
         err, retInts, retFloats, retStrings, retBuff = vrep.simxCallScriptFunction(self.clientID,
                                                                                    self.main_object,
@@ -141,6 +141,7 @@ class RobotArm(object):
     def start_sim(self):
         time.sleep(self.sleep_sec_min)
         vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot)
+        self.gripper_enabled = False
         self.update_all_object_positions()
         self.cylinder_height = self.get_object_height(self.cylinder_handle)
         self.cylinder_z_locus = self.get_position(self.cylinder_handle)[2]

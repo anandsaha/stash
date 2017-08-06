@@ -12,7 +12,7 @@ def distance(pos1, pos2):
 
 
 def log_and_display(msg):
-    stat_file = open('log.txt', 'a')
+    stat_file = open('qtables/log.txt', 'a')
     content = "[{0}] {1}\n".format(datetime.datetime.now(), msg)
     stat_file.write(content)
     stat_file.close()
