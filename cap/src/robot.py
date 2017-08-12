@@ -5,6 +5,7 @@ import time
 import vrep
 import numpy as np
 import utility
+import config
 
 
 class RobotArm(object):
@@ -85,9 +86,7 @@ class RobotArm(object):
     def get_env_dimensions():
         # Dimensions of the virtual space within which the arm should maneuver
         # X min, max; Y min, max; Z min, max
-        dim = [[utility.rnd(-0.32), utility.rnd(-0.20)],
-               [utility.rnd(-0.12), utility.rnd(-0.07)],
-               [utility.rnd(0.0), utility.rnd(0.18)]]
+        dim = config.ENV_DIMENSION
         return dim
 
     def goto_position(self, pos):

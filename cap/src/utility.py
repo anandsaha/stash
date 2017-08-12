@@ -2,6 +2,8 @@ import numpy as np
 import decimal
 import datetime
 
+LOG_FILE = 'qtables/log.txt'
+
 
 def distance(pos1, pos2):
     x2 = np.square(pos1[0] - pos2[0])
@@ -12,7 +14,7 @@ def distance(pos1, pos2):
 
 
 def log_and_display(msg):
-    stat_file = open('qtables/log.txt', 'a')
+    stat_file = open(LOG_FILE, 'a')
     content = "[{0}] {1}\n".format(datetime.datetime.now(), msg)
     stat_file.write(content)
     stat_file.close()

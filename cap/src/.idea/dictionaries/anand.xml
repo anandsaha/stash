@@ -6,7 +6,9 @@
       <w>maxval</w>
       <w>minval</w>
       <w>nslices</w>
+      <w>qtable</w>
       <w>uarm</w>
+      <w>vrep</w>
     </words>
   </dictionary>
 </component>
