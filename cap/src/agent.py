@@ -17,11 +17,11 @@ class Agent(object):
 
         # Give the claw engaging actions slight higher initial values
         for index, val in enumerate(self.q_table):
-            if not env.states[index][3]:  # If grip not enabled
-                self.q_table[index][0] += 1  # Encourage grip enable
+            if not env.states[index][3]:  # If object not held
+                self.q_table[index][0] += 5  # Encourage grip enable
                 self.q_table[index][1] -= 10
             else:
-                self.q_table[index][1] += 1
+                self.q_table[index][1] += 5
                 self.q_table[index][0] -= 10
 
         self.current_state_id = None

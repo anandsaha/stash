@@ -11,13 +11,13 @@ def is_valid_state(env):
 
 def is_cylinder_standing(env):
     cylinder_pos = env.robot.get_position(env.robot.cylinder_handle)
-    if (cylinder_pos[2] - env.robot.cylinder_z_locus) <= (-1 * config.TOLERANCE):
+    if (cylinder_pos[2] - env.robot.cylinder_z_locus) <= (-1 * config.TOLERANCE2):
         return False
     return True
 
 
 def is_bin_inplace(env):
-    if utility.distance(env.robot.bin_position, env.actionstate_curr['bin_position']) > config.TOLERANCE:
+    if utility.distance(env.robot.bin_position, env.actionstate_curr['bin_position']) > config.TOLERANCE2:
         return False
     return True
 

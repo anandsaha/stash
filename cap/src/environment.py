@@ -13,16 +13,20 @@ class Environment(object):
 
         self.robot = RobotArm(vrep_ip, vrep_port)
 
-        self.tolerance = utility.rnd(config.UNIT_STEP_SIZE)
+        self.tolerance = utility.rnd(config.TOLERANCE)
+        self.unit_step = utility.rnd(config.UNIT_STEP_SIZE)
 
         dim = self.robot.get_env_dimensions()
-        self.x_range = np.arange(dim[0][0], dim[0][1], self.tolerance)
-        self.y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
-        self.z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
+
 
         # Actions #########################################################
         # The actions the agent can take - either goto some x,y,z position
         # or engage/disengage claw
+
+        x_range = np.arange(dim[0][0], dim[0][1], self.unit_step)
+        y_range = np.arange(dim[1][0], dim[1][1], self.unit_step)
+        z_range = np.arange(dim[2][0], dim[2][1], self.unit_step)
+
         self.action_type1 = 'move_gripper'
         self.action_type2 = 'engage_gripper'
 
@@ -33,9 +37,9 @@ class Environment(object):
         self.actions.append([self.action_type2, True])
         self.actions.append([self.action_type2, False])
 
-        for x in self.x_range:
-            for y in self.y_range:
-                for z in self.z_range:
+        for x in x_range:
+            for y in y_range:
+                for z in z_range:
                     self.actions.append([self.action_type1, [x, y, z]])
 
         self.total_actions = len(self.actions)
@@ -44,11 +48,19 @@ class Environment(object):
         # States consist of
         #   a) Position of the object (x, y z coordinates)
         #   b) If it is held by gripper or not
+        x_range = np.arange(dim[0][0], dim[0][1], self.tolerance)
+        y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
+        z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
+
+        log_and_display("X: " + str(x_range))
+        log_and_display("Y: " + str(y_range))
+        log_and_display("Z: " + str(z_range))
+
         self.states = []
         self.invalid_state = config.INVALID_STATE
-        for x in self.x_range:
-            for y in self.y_range:
-                for z in self.z_range:
+        for x in x_range:
+            for y in y_range:
+                for z in z_range:
                     for b in [True, False]:
                         self.states.append([x, y, z, b])
 
@@ -83,14 +95,11 @@ class Environment(object):
 
         current_state_id = 0
         for state in self.states:
-            if abs(state[0] - pos[0]) < self.tolerance \
-                    and abs(state[1] - pos[1]) < self.tolerance \
-                    and abs(state[2] - pos[2]) < self.tolerance \
-                    and state[3] == object_held:
-                        return current_state_id
+            if abs(state[0] - pos[0]) < self.tolerance and abs(state[1] - pos[1]) < self.tolerance and abs(state[2] - pos[2]) < self.tolerance and state[3] == object_held:
+                return current_state_id
             current_state_id += 1
 
-        log_and_display('Position was invalid' + str(pos))
+        log_and_display('Position was invalid: ' + str(pos))
         return self.invalid_states_index
 
     def __update_actionstate(self, action_id):

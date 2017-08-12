@@ -1,0 +1,10 @@
+[2017-08-13 02:21:49.682543] X: [Decimal('-0.32') Decimal('-0.31') Decimal('-0.30') Decimal('-0.29')
+ Decimal('-0.28') Decimal('-0.27') Decimal('-0.26') Decimal('-0.25')
+ Decimal('-0.24') Decimal('-0.23') Decimal('-0.22') Decimal('-0.21')]
+[2017-08-13 02:21:49.682893] Y: [Decimal('-0.12') Decimal('-0.11') Decimal('-0.10') Decimal('-0.09')
+ Decimal('-0.08')]
+[2017-08-13 02:21:49.683196] Z: [Decimal('0.00') Decimal('0.01') Decimal('0.02') Decimal('0.03')
+ Decimal('0.04') Decimal('0.05') Decimal('0.06') Decimal('0.07')
+ Decimal('0.08') Decimal('0.09') Decimal('0.10')]
+[2017-08-13 02:21:49.684331] There are 110 actions.
+[2017-08-13 02:21:49.684424] There are 1321 states.
