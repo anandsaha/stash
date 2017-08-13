@@ -6,7 +6,7 @@ import config
 
 vrep_ip = '127.0.0.1'
 vrep_port = 19997
-agent = Agent(Environment(vrep_ip, vrep_port), learn_rate=0.5, discount=0.9, epsilon=0.2, q_init_val=0.0)
+agent = Agent(Environment(vrep_ip, vrep_port), learn_rate=0.5, discount=0.9, epsilon=0., q_init_val=0.0)
 episodes = 1000
 episode_num = 0
 agent.load_qtable()

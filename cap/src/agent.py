@@ -15,14 +15,23 @@ class Agent(object):
 
         self.q_table = np.full((env.total_states, env.total_actions), q_init_val)
 
-        # Give the claw engaging actions slight higher initial values
+        ##########################################################################################
+        # Pre process the Q Table
         for index, val in enumerate(self.q_table):
             if not env.states[index][3]:  # If object not held
                 self.q_table[index][0] += 5  # Encourage grip enable
-                self.q_table[index][1] -= 10
+                self.q_table[index][1] -= 100
+                if env.states[index][6] > 0.03:
+                    for act in range(env.total_actions):
+                        if env.actions[act][0] == env.action_type1 and env.actions[act][1][2] > 0.03:
+                            self.q_table[index][act] = -100
             else:
                 self.q_table[index][1] += 5
-                self.q_table[index][0] -= 10
+                self.q_table[index][0] -= 100
+                if env.states[index][6] <= 0.07:
+                    for act in range(env.total_actions):
+                        if env.actions[act][0] == env.action_type1 and env.actions[act][1][2] <= 0.07:
+                            self.q_table[index][act] = -100
 
         self.current_state_id = None
         self.reset()
@@ -75,7 +84,7 @@ class Agent(object):
         while max_steps > 0 and not self.env.is_goal_achieved() and not self.env.environment_breached:
             action_id = self.choose_action(self.current_state_id)
             reward = self.do_action(action_id)
-            new_state_id = self.env.get_current_state()
+            new_state_id = self.env.actionstate_curr['current_state_id']
             self.update_q_table(self.current_state_id, action_id, reward, new_state_id)
             self.current_state_id = new_state_id
 

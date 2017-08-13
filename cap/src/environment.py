@@ -18,14 +18,13 @@ class Environment(object):
 
         dim = self.robot.get_env_dimensions()
 
-
         # Actions #########################################################
         # The actions the agent can take - either goto some x,y,z position
         # or engage/disengage claw
 
-        x_range = np.arange(dim[0][0], dim[0][1], self.unit_step)
-        y_range = np.arange(dim[1][0], dim[1][1], self.unit_step)
-        z_range = np.arange(dim[2][0], dim[2][1], self.unit_step)
+        x_range_actions = np.arange(dim[0][0], dim[0][1], self.unit_step)
+        y_range_actions = np.arange(dim[1][0], dim[1][1], self.unit_step)
+        z_range_actions = np.arange(dim[2][0], dim[2][1], self.unit_step)
 
         self.action_type1 = 'move_gripper'
         self.action_type2 = 'engage_gripper'
@@ -37,9 +36,9 @@ class Environment(object):
         self.actions.append([self.action_type2, True])
         self.actions.append([self.action_type2, False])
 
-        for x in x_range:
-            for y in y_range:
-                for z in z_range:
+        for x in x_range_actions[1:-1]:
+            for y in y_range_actions[1:-1]:
+                for z in z_range_actions[1:-1]:
                     self.actions.append([self.action_type1, [x, y, z]])
 
         self.total_actions = len(self.actions)
@@ -52,17 +51,16 @@ class Environment(object):
         y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
         z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
 
-        log_and_display("X: " + str(x_range))
-        log_and_display("Y: " + str(y_range))
-        log_and_display("Z: " + str(z_range))
-
         self.states = []
         self.invalid_state = config.INVALID_STATE
         for x in x_range:
             for y in y_range:
                 for z in z_range:
                     for b in [True, False]:
-                        self.states.append([x, y, z, b])
+                        for xa in x_range_actions:
+                            for ya in y_range_actions:
+                                for za in z_range_actions:
+                                    self.states.append([x, y, z, b, xa, ya, za])
 
         # invalid state, the last state. This state suggests that the object is outside the environment.
         self.states.append(self.invalid_state)
@@ -72,7 +70,6 @@ class Environment(object):
         log_and_display("There are {0} actions.".format(self.total_actions))
         log_and_display("There are {0} states.".format(self.total_states))
 
-        self.current_object_state = None
         self.episode_object_gripped = False
         self.environment_breached = False
         self.is_success = False
@@ -82,7 +79,6 @@ class Environment(object):
 
     def environment_reset(self):
         self.robot.restart_sim()
-        self.current_object_state = self.get_current_state()
         self.robot.goto_position(config.INIT_ARM_POSITION)
         self.episode_object_gripped = False
         self.environment_breached = False
@@ -90,16 +86,18 @@ class Environment(object):
         self.actionstate_prev = {}
         self.actionstate_curr = {}
 
-    def __get_canonical_state(self, handle: int, object_held: bool):
-        pos = self.robot.get_position(handle)
+    def __get_canonical_state(self):
+        pos_obj = self.robot.get_position(self.robot.cylinder_handle)
+        pos_arm = self.robot.get_position(self.robot.gripper_handle)
+        object_held = self.robot.is_object_held()
 
         current_state_id = 0
         for state in self.states:
-            if abs(state[0] - pos[0]) < self.tolerance and abs(state[1] - pos[1]) < self.tolerance and abs(state[2] - pos[2]) < self.tolerance and state[3] == object_held:
+            if abs(state[0] - pos_obj[0]) < self.tolerance and abs(state[1] - pos_obj[1]) < self.tolerance and abs(state[2] - pos_obj[2]) < self.tolerance and state[3] == object_held and abs(state[4] - pos_arm[0]) < self.unit_step and abs(state[5] - pos_arm[1]) < self.unit_step and abs(state[6] - pos_arm[2]) < self.unit_step:
                 return current_state_id
             current_state_id += 1
 
-        log_and_display('Position was invalid: ' + str(pos))
+        log_and_display('!!!!!!!!!!!!!!!! Position was invalid: ' + str(pos_obj) + str(object_held) + str(pos_arm))
         return self.invalid_states_index
 
     def __update_actionstate(self, action_id):
@@ -119,7 +117,7 @@ class Environment(object):
         self.actionstate_curr['is_cylinder_held'] = self.robot.is_object_held()
 
     def get_current_state(self):
-        return self.__get_canonical_state(self.robot.cylinder_handle, self.robot.is_object_held())
+        return self.__get_canonical_state()
 
     def get_arm_position(self):
         return self.robot.get_position(self.robot.gripper_handle)
