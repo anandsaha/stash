@@ -19,8 +19,8 @@ class RobotArm(object):
             raise RuntimeError('Could not connect to V-REP')
 
         # Some artificial delays to let V-REP stabilize after an action
-        self.sleep_sec = 0.4
-        self.sleep_sec_min = 0.3
+        self.sleep_sec = config.SLEEP_VAL
+        self.sleep_sec_min = config.SLEEP_VAL_MIN
 
         # id of the Robot Arm in V-REP environment
         self.main_object = 'uarm'
@@ -45,7 +45,7 @@ class RobotArm(object):
 
         # Distance between cylinder and bin when former is inside later
         # This was measured after putting the cylinder in the bin
-        self.cylinder_bin_distance = 0.013
+        self.cylinder_bin_distance = config.CYLINDER_BIN_DISTANCE
 
         # Various values, to be set in the start_sim() function, because their values can be obtained
         # only after the simulation starts
@@ -59,12 +59,7 @@ class RobotArm(object):
         print('Disconnecting from V-REP')
         self.disconnect()
 
-    def disconnect(self):
-        self.stop_sim()
-        vrep.simxGetPingTime(self.clientID)
-        vrep.simxFinish(self.clientID)
-
-    def update_all_object_positions(self):
+    def __update_all_object_positions(self):
         time.sleep(self.sleep_sec)
         err, handles, ints, floats, strings = vrep.simxGetObjectGroupData(self.clientID,
                                                                           vrep.sim_appobj_object_type, 3,
@@ -74,12 +69,17 @@ class RobotArm(object):
         self.objects = handles
         self.object_positions = positions.reshape(len(handles), 3)
 
+    def disconnect(self):
+        self.stop_sim()
+        vrep.simxGetPingTime(self.clientID)
+        vrep.simxFinish(self.clientID)
+
     def get_position(self, handle):
-        # self.object_positions is updated by the update_all_object_positions() method
+        # self.object_positions is updated by the __update_all_object_positions() method
         pos = self.object_positions[self.objects.index(handle)].tolist()
         for idx, val in enumerate(pos):
             pos[idx] = utility.rnd(pos[idx])
-        pos[2] += utility.rnd(0.01)  # TODO Positional correction for Z Axis, revisit
+        #pos[2] += utility.rnd(0.01)  # TODO Positional correction for Z Axis, revisit
         return pos
 
     @staticmethod
@@ -115,7 +115,7 @@ class RobotArm(object):
             raise RuntimeError("goto_position(): Failed to move the arm")
 
         # Since we have moved the arm, we need to take stock of positions of all the objects
-        self.update_all_object_positions()
+        self.__update_all_object_positions()
 
     def enable_grip(self, enable):
         time.sleep(self.sleep_sec_min)
@@ -134,14 +134,14 @@ class RobotArm(object):
             raise RuntimeError("enable_grip(): Failed to enable/disable grip")
 
         # Since we have altered the grip, we need to take stock of positions of all the objects
-        self.update_all_object_positions()
+        self.__update_all_object_positions()
         self.gripper_enabled = enable
 
     def start_sim(self):
         time.sleep(self.sleep_sec_min)
         vrep.simxStartSimulation(self.clientID, vrep.simx_opmode_oneshot)
         self.gripper_enabled = False
-        self.update_all_object_positions()
+        self.__update_all_object_positions()
         self.cylinder_height = self.get_object_height(self.cylinder_handle)
         self.cylinder_z_locus = self.get_position(self.cylinder_handle)[2]
         self.bin_position = self.get_position(self.bin_handle)
@@ -189,3 +189,13 @@ class RobotArm(object):
         pos_cyl = self.get_position(self.cylinder_handle)
 
         return utility.distance(pos_bin, pos_cyl) < self.cylinder_bin_distance
+
+    def set_object_location(self, x: float, y: float):
+
+        pos = self.get_position(self.cylinder_handle)
+        self.goto_position(pos)
+        self.enable_grip(True)
+        pos[0] = x
+        pos[1] = y
+        self.goto_position(pos)
+        self.enable_grip(False)

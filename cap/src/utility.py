@@ -1,3 +1,8 @@
+"""
+Various utility functions
+
+(c) Anand Saha <anandsaha@gmail.com> 2017
+"""
 import numpy as np
 import decimal
 import datetime

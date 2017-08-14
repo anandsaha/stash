@@ -11,13 +11,13 @@ def is_valid_state(env):
 
 def is_cylinder_standing(env):
     cylinder_pos = env.robot.get_position(env.robot.cylinder_handle)
-    if (cylinder_pos[2] - env.robot.cylinder_z_locus) <= (-1 * config.TOLERANCE2):
+    if (cylinder_pos[2] - env.robot.cylinder_z_locus) <= (-1 * config.TOLERANCE_FINER):
         return False
     return True
 
 
 def is_bin_inplace(env):
-    if utility.distance(env.robot.bin_position, env.actionstate_curr['bin_position']) > config.TOLERANCE2:
+    if utility.distance(env.robot.bin_position, env.actionstate_curr['bin_position']) > config.TOLERANCE_FINER:
         return False
     return True
 
@@ -71,34 +71,36 @@ def calculate_reward(env):
 
     if not is_valid_state(env):
         log_and_display('Penalty: Reached invalid state, terminating')
-        return -100, True, False
+        return config.REWARD_TERMINATION, True, False
 
     if not is_cylinder_standing(env):
         log_and_display('Penalty: Cylinder has fallen, terminating')
-        return -100, True, False
+        return config.REWARD_TERMINATION, True, False
 
     if not is_bin_inplace(env):
         log_and_display('Penalty: Bin has shifted, terminating')
-        return -100, True, False
-    # Disabled
+        return config.REWARD_TERMINATION, True, False
+
+    """
     if False and is_previous_current_state_same(env):
         log_and_display('Penalty: Previous and current state is same')
-        return -100, False, False
+        return config.REWARD_TERMINATION, False, False
 
     if is_grip_engaged_with_no_object(env):
         log_and_display('Penalty: Claw is engaged but cylinder is not in claw')
-        return -100, False, False
+        return config.REWARD_BAD_STEP, False, False
 
     if is_cylinder_not_dropped_in_bin(env):
         log_and_display('Penalty: Claw did not drop the cylinder in the bin')
-        return -100, False, False
+        return config.REWARD_BAD_STEP, False, False
 
     if is_grip_holding_object(env):
         log_and_display('Reward: Claw could grab the cylinder for first time')
-        return 5, False, False
+        return config.REWARD_FIRST_SUCCESS, False, False
+    """
 
     if is_object_in_bin(env):
         log_and_display('Reward: Cylinder in bucket. Objective achieved !!!!!!!!')
-        return 100, True, True
+        return config.REWARD_GOAL_ACHIEVED, True, True
 
-    return -2, False, False  # Default
+    return config.REWARD_DEFAULT, False, False  # Default

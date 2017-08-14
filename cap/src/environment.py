@@ -26,15 +26,18 @@ class Environment(object):
         y_range_actions = np.arange(dim[1][0], dim[1][1], self.unit_step)
         z_range_actions = np.arange(dim[2][0], dim[2][1], self.unit_step)
 
-        self.action_type1 = 'move_gripper'
-        self.action_type2 = 'engage_gripper'
-
         # Actions consist of
         #   a) Gripper Enable/Disable
         #   b) Goto location (x, y, z)
+        self.action_type1 = 'move_gripper'
+        self.action_type2 = 'engage_gripper'
         self.actions = []
         self.actions.append([self.action_type2, True])
         self.actions.append([self.action_type2, False])
+
+        print(x_range_actions[1:-1])
+        print(y_range_actions[1:-1])
+        print(z_range_actions[1:-1])
 
         for x in x_range_actions[1:-1]:
             for y in y_range_actions[1:-1]:
@@ -45,8 +48,9 @@ class Environment(object):
 
         # States #########################################################
         # States consist of
-        #   a) Position of the object (x, y z coordinates)
+        #   a) Position of the object (x, y, z coordinates)
         #   b) If it is held by gripper or not
+        #   c) Position of the gripper (x, y, z coordinates)
         x_range = np.arange(dim[0][0], dim[0][1], self.tolerance)
         y_range = np.arange(dim[1][0], dim[1][1], self.tolerance)
         z_range = np.arange(dim[2][0], dim[2][1], self.tolerance)
@@ -93,11 +97,17 @@ class Environment(object):
 
         current_state_id = 0
         for state in self.states:
-            if abs(state[0] - pos_obj[0]) < self.tolerance and abs(state[1] - pos_obj[1]) < self.tolerance and abs(state[2] - pos_obj[2]) < self.tolerance and state[3] == object_held and abs(state[4] - pos_arm[0]) < self.unit_step and abs(state[5] - pos_arm[1]) < self.unit_step and abs(state[6] - pos_arm[2]) < self.unit_step:
+            if abs(state[0] - pos_obj[0]) < self.tolerance \
+                    and abs(state[1] - pos_obj[1]) < self.tolerance \
+                    and abs(state[2] - pos_obj[2]) < self.tolerance \
+                    and state[3] == object_held \
+                    and abs(state[4] - pos_arm[0]) < self.unit_step \
+                    and abs(state[5] - pos_arm[1]) < self.unit_step \
+                    and abs(state[6] - pos_arm[2]) < self.unit_step:
                 return current_state_id
             current_state_id += 1
 
-        log_and_display('!!!!!!!!!!!!!!!! Position was invalid: ' + str(pos_obj) + str(object_held) + str(pos_arm))
+        log_and_display('State was invalid: ' + str(pos_obj) + str(object_held) + str(pos_arm))
         return self.invalid_states_index
 
     def __update_actionstate(self, action_id):
