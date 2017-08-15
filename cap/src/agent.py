@@ -67,7 +67,7 @@ class Agent(object):
             action_id = np.argmax(self.q_table[current_state_id])
         return action_id
 
-    def do_action(self, action_id):
+    def execute_action(self, action_id):
         action = self.env.actions[action_id]
 
         if action[0] == self.env.action_type1:
@@ -92,7 +92,7 @@ class Agent(object):
 
         while max_steps > 0 and not self.env.is_goal_achieved() and not self.env.environment_breached:
             action_id = self.choose_action(self.current_state_id)
-            reward = self.do_action(action_id)
+            reward = self.execute_action(action_id)
             new_state_id = self.env.actionstate_curr['current_state_id']
             self.update_q_table(self.current_state_id, action_id, reward, new_state_id)
             self.current_state_id = new_state_id
