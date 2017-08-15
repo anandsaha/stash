@@ -85,6 +85,7 @@ def calculate_reward(env):
     if False and is_previous_current_state_same(env):
         log_and_display('Penalty: Previous and current state is same')
         return config.REWARD_TERMINATION, False, False
+    """
 
     if is_grip_engaged_with_no_object(env):
         log_and_display('Penalty: Claw is engaged but cylinder is not in claw')
@@ -97,7 +98,6 @@ def calculate_reward(env):
     if is_grip_holding_object(env):
         log_and_display('Reward: Claw could grab the cylinder for first time')
         return config.REWARD_FIRST_SUCCESS, False, False
-    """
 
     if is_object_in_bin(env):
         log_and_display('Reward: Cylinder in bucket. Objective achieved !!!!!!!!')

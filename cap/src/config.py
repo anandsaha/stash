@@ -8,9 +8,10 @@ import utility
 
 # Number of episodes to run
 NUM_EPISODES = 10000
-
 # Number of max actions to execute per episode (terminate episode if this number is exceeded)
 NUM_MAX_ACTIONS = 100
+# Least actions needed to achieve the goal
+MIN_ACTIONS_EXPECTED = 5
 
 # Initial Q value to be populated for every state/action pair
 Q_INIT_VAL = 0.0
@@ -23,10 +24,8 @@ DISCOUNT = 0.8
 # The learn rate in equation of Q-Value
 LEARN_RATE = 0.5
 
-
 # File where Q table will be saved, loaded from. It's a numpy array.
 Q_TABLE_FILE = 'qtables/qtable.txt.npy'
-
 # File where per-episodic data will be saved: episode id, is success?, total rewards, total actions.
 PLOT_FILE = 'qtables/episodes.txt'
 
@@ -35,10 +34,8 @@ INVALID_STATE = [-100, -100, -100, False, -100, -100, -100]
 
 # The step size to use to discretize the environment
 UNIT_STEP_SIZE = 0.02
-
 # A value to judge nearness
 TOLERANCE = 0.01
-
 # A finer value to judge nearness
 TOLERANCE_FINER = 0.005
 
@@ -59,7 +56,7 @@ CYLINDER_BIN_DISTANCE = 0.013
 
 # Rewards
 REWARD_TERMINATION = -10
-#REWARD_BAD_STEP = -3
-#REWARD_FIRST_SUCCESS = 5
+REWARD_BAD_STEP = -3
+REWARD_FIRST_SUCCESS = 5
 REWARD_GOAL_ACHIEVED = 10
 REWARD_DEFAULT = -1

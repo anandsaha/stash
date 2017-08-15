@@ -79,7 +79,6 @@ class RobotArm(object):
         pos = self.object_positions[self.objects.index(handle)].tolist()
         for idx, val in enumerate(pos):
             pos[idx] = utility.rnd(pos[idx])
-        #pos[2] += utility.rnd(0.01)  # TODO Positional correction for Z Axis, revisit
         return pos
 
     @staticmethod

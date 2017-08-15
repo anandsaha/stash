@@ -79,7 +79,6 @@ class Environment(object):
         self.is_success = False
         self.actionstate_prev = {}
         self.actionstate_curr = {}
-        self.environment_reset()
 
     def environment_reset(self):
         self.robot.restart_sim()

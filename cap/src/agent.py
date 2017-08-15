@@ -20,7 +20,6 @@ class Agent(object):
 
         self.current_state_id = None
         self.total_explorations = 0
-        self.reset()
 
     def pre_populate_qtable(self):
         log_and_display("Pre populating the Q Table with some known values - this helps in converging faster")
