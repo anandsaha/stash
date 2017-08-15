@@ -103,3 +103,21 @@ class Agent(object):
 
         return total_reward, total_steps, self.env.is_goal_achieved(), self.total_explorations
 
+    def execute_test(self, max_steps: int):
+        total_reward = 0
+        total_steps = 0
+        self.epsilon = 0.0
+
+        while max_steps > 0 and not self.env.is_goal_achieved() and not self.env.environment_breached:
+            action_id = self.choose_action(self.current_state_id)
+            reward = self.execute_action(action_id)
+            new_state_id = self.env.actionstate_curr['current_state_id']
+            self.current_state_id = new_state_id
+
+            max_steps -= 1
+            total_reward += reward
+            total_steps += 1
+
+        return total_reward, total_steps, self.env.is_goal_achieved(), self.total_explorations
+
+

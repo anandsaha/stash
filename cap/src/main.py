@@ -3,7 +3,23 @@ from utility import log_and_display
 from environment import Environment
 import numpy as np
 import config
+import sys
 
+
+def usage():
+    print("Usage: python3 main.py [--train, --test]")
+    exit(-1)
+
+if len(sys.argv) != 2:
+    usage()
+
+train_mode = True
+if sys.argv[1] == '--test':
+    train_mode = False
+elif sys.argv[1] == '--train':
+    train_mode = True
+else:
+    usage()
 
 vrep_ip = '127.0.0.1'
 vrep_port = 19997
@@ -26,21 +42,30 @@ log_and_display("Max Episodes: " + str(config.NUM_EPISODES))
 log_and_display("Max Actions/Episodes: " + str(config.NUM_MAX_ACTIONS))
 log_and_display("Env Dimensions: " + str(config.ENV_DIMENSION))
 
-while episodes > 0:
-    log_and_display('=============================================> Episode ' + str(episodes))
+if train_mode:
+    while episodes > 0:
+        log_and_display('=============================================> Episode ' + str(episodes))
+        agent.reset()
+        total_reward, total_steps, success, total_explorations = agent.execute_episode_qlearn(config.NUM_MAX_ACTIONS)
+        agent.epsilon -= np.maximum(0.0, config.EPSILON_DECAY)  # Reduce exploration rate with each episode
+        episode_num = config.NUM_EPISODES - episodes + 1
+
+        stat_file = open(config.PLOT_FILE, 'a')
+        stat_file.write("{0}, {1}, {2}, {3}, {4}\n".format(episode_num, success, total_reward,
+                                                           total_steps, total_explorations))
+        stat_file.close()
+        agent.save_qtable()
+        episodes -= 1
+
+        if success and total_steps == config.MIN_ACTIONS_EXPECTED and total_explorations == 0:
+            log_and_display('Optimal moves learnt. Terminating training. Now run agent with epsilon as 0.')
+            break
+else:
     agent.reset()
-    total_reward, total_steps, success, total_explorations = agent.execute_episode_qlearn(config.NUM_MAX_ACTIONS)
-    agent.epsilon -= np.maximum(0.0, config.EPSILON_DECAY)  # Reduce exploration rate with each episode
-    episode_num = config.NUM_EPISODES - episodes + 1
-
-    stat_file = open(config.PLOT_FILE, 'a')
-    stat_file.write("{0}, {1}, {2}, {3}, {4}\n".format(episode_num, success, total_reward,
-                                                       total_steps, total_explorations))
-    stat_file.close()
-    agent.save_qtable()
-    episodes -= 1
-
-    if success and total_steps == config.MIN_ACTIONS_EXPECTED and total_explorations == 0:
-        log_and_display('Optimal moves learnt. Terminating training. Now run agent with epsilon as 0.')
-        break
-
+    total_reward, total_steps, success, total_explorations = agent.execute_test(config.NUM_MAX_ACTIONS)
+    msg = "The agent was tested with a learnt Q-Table with the following results:\n"
+    msg += "Success: {}\n".format(success)
+    msg += "Total Steps: {}\n".format(total_steps)
+    msg += "Exploratory Steps: {}\n".format(total_explorations)
+    msg += "Total Reward: {}\n".format(total_reward)
+    log_and_display(msg)
