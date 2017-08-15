@@ -57,7 +57,8 @@ if train_mode:
         agent.save_qtable()
         episodes -= 1
 
-        if success and total_steps == config.MIN_ACTIONS_EXPECTED and total_explorations == 0:
+        if success and total_steps == config.MIN_ACTIONS_EXPECTED \
+                and total_explorations == 0 and episodes > config.MIN_EPISODES_TO_RUN:
             log_and_display('Optimal moves learnt. Terminating training. Now run agent with epsilon as 0.')
             break
 else:
