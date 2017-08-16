@@ -47,18 +47,19 @@ if train_mode:
         log_and_display('=============================================> Episode ' + str(episodes))
         agent.reset()
         total_reward, total_steps, success, total_explorations = agent.execute_episode_qlearn(config.NUM_MAX_ACTIONS)
-        agent.epsilon -= np.maximum(0.0, config.EPSILON_DECAY)  # Reduce exploration rate with each episode
         episode_num = config.NUM_EPISODES - episodes + 1
+        # Reduce exploration rate with each episode
+        agent.epsilon = np.maximum(0.0, config.EPSILON - episode_num * config.EPSILON_DECAY)
 
         stat_file = open(config.PLOT_FILE, 'a')
-        stat_file.write("{0}, {1}, {2}, {3}, {4}\n".format(episode_num, success, total_reward,
-                                                           total_steps, total_explorations))
+        stat_file.write("{0}, {1}, {2}, {3}, {4}, {5}\n".format(episode_num, success, total_reward,
+                                                                total_steps, total_explorations, agent.epsilon))
         stat_file.close()
         agent.save_qtable()
         episodes -= 1
 
         if success and total_steps == config.MIN_ACTIONS_EXPECTED \
-                and total_explorations == 0 and episodes > config.MIN_EPISODES_TO_RUN:
+                and total_explorations == 0 and episode_num > config.MIN_EPISODES_TO_RUN:
             log_and_display('Optimal moves learnt. Terminating training. Now run agent with epsilon as 0.')
             break
 else:

@@ -8,7 +8,7 @@ import utility
 
 # Number of episodes to run
 NUM_EPISODES = 10000
-MIN_EPISODES_TO_RUN = 3000
+MIN_EPISODES_TO_RUN = 2500
 # Number of max actions to execute per episode (terminate episode if this number is exceeded)
 NUM_MAX_ACTIONS = 100
 # Least actions needed to achieve the goal
@@ -19,7 +19,7 @@ Q_INIT_VAL = 0.0
 # Epsilon value (the portion of exploratory actions)
 EPSILON = 0.3
 # The amount by which epsilon will be reduced every episode (to reduce exploration as we start executing more episodes)
-EPSILON_DECAY = EPSILON * 0.0002
+EPSILON_DECAY = EPSILON * 0.0001
 # The discount rate in equation of Q-Value
 DISCOUNT = 0.8
 # The learn rate in equation of Q-Value

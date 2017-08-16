@@ -57,7 +57,7 @@ class Agent(object):
         self.current_state_id = self.env.get_current_state()
         self.total_explorations = 0
 
-    def choose_action(self, current_state_id):
+    def select_action(self, current_state_id):
         if np.random.uniform() < self.epsilon:
             log_and_display('Exploring...')
             self.total_explorations += 1
@@ -91,7 +91,7 @@ class Agent(object):
         total_steps = 0
 
         while max_steps > 0 and not self.env.is_goal_achieved() and not self.env.environment_breached:
-            action_id = self.choose_action(self.current_state_id)
+            action_id = self.select_action(self.current_state_id)
             reward = self.execute_action(action_id)
             new_state_id = self.env.actionstate_curr['current_state_id']
             self.update_q_table(self.current_state_id, action_id, reward, new_state_id)
@@ -109,7 +109,7 @@ class Agent(object):
         self.epsilon = 0.0
 
         while max_steps > 0 and not self.env.is_goal_achieved() and not self.env.environment_breached:
-            action_id = self.choose_action(self.current_state_id)
+            action_id = self.select_action(self.current_state_id)
             reward = self.execute_action(action_id)
             new_state_id = self.env.actionstate_curr['current_state_id']
             self.current_state_id = new_state_id

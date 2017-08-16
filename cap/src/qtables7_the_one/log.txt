@@ -40092,33 +40092,3 @@
 [2017-08-16 03:53:32.355001] Reward: Cylinder in bucket. Objective achieved !!!!!!!!
 [2017-08-16 03:53:32.355155] Q-Value: S:393484, A:1, R:10, S`:391468, TE: 0.0, Q:10.0, Q`:10.0
 [2017-08-16 03:53:32.505040] Optimal moves learnt. Terminating training. Now run agent with epsilon as 0.
-[2017-08-16 07:43:51.747892] There are 62 actions.
-[2017-08-16 07:43:51.748016] There are 611521 states.
-[2017-08-16 07:43:51.862207] %%%%%%%%%%%%%%%%%%%%%%%%% Main starts %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-[2017-08-16 07:43:51.862347] Epsilon: 0.3
-[2017-08-16 07:43:51.862404] Epsilon Decay: 3e-05
-[2017-08-16 07:43:51.862455] Q Init: 0.0
-[2017-08-16 07:43:51.862505] Discount: 0.8
-[2017-08-16 07:43:51.862555] Learning Rate: 0.5
-[2017-08-16 07:43:51.862604] Max Episodes: 10000
-[2017-08-16 07:43:51.862651] Max Actions/Episodes: 100
-[2017-08-16 07:43:51.862723] Env Dimensions: [[Decimal('-0.32'), Decimal('-0.19')], [Decimal('-0.12'), Decimal('-0.05')], [Decimal('0.00'), Decimal('0.15')]]
-[2017-08-16 07:43:51.862772] Initializing episode
-[2017-08-16 07:43:54.265938] Exploiting...
-[2017-08-16 07:43:54.266084] Action: Moving claw [Decimal('-0.30'), Decimal('-0.10'), Decimal('0.04')]
-[2017-08-16 07:43:55.301525] Exploiting...
-[2017-08-16 07:43:55.301658] Action: Engaging/Disengaging claw True
-[2017-08-16 07:43:56.135630] Reward: Claw could grab the cylinder for first time
-[2017-08-16 07:43:56.135754] Exploiting...
-[2017-08-16 07:43:56.135829] Action: Moving claw [Decimal('-0.28'), Decimal('-0.08'), Decimal('0.12')]
-[2017-08-16 07:43:57.247807] Exploiting...
-[2017-08-16 07:43:57.247931] Action: Moving claw [Decimal('-0.24'), Decimal('-0.10'), Decimal('0.10')]
-[2017-08-16 07:43:58.441755] Exploiting...
-[2017-08-16 07:43:58.441888] Action: Engaging/Disengaging claw False
-[2017-08-16 07:43:59.447304] Reward: Cylinder in bucket. Objective achieved !!!!!!!!
-[2017-08-16 07:43:59.447447] The agent was tested with a learnt Q-Table with the following results:
-Success: True
-Total Steps: 5
-Exploratory Steps: 0
-Total Reward: 12
-
