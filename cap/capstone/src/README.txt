@@ -3,14 +3,14 @@ Instructions for running this project on Linux
 The solution was developmed with:
 
 Ubuntu 16.04
-Python 3.5 (https://discussions.udacity.com/t/only-python-2-7/227331)
+Python 3.5 (Permissible as mentioned in https://discussions.udacity.com/t/only-python-2-7/227331)
 Numpy 1.12.1
 
 Setup the V-REP environment
 ==========================================================================
 1. Download the software from http://coppeliarobotics.com/files/V-REP_PRO_EDU_V3_4_0_Linux.tar.gz to any directory of your choosing.
 
-2. Unzip and edit the remoteApiConnections.txt file to contain the following (comment out all other lines):
+2. Unzip V-REP software and edit the 'remoteApiConnections.txt' file to contain the following (comment out all other lines):
 
 // Let's start a continuous remote API server service on port 19997:
 portIndex1_port             = 19997
@@ -19,7 +19,7 @@ portIndex1_syncSimTrigger   = false
 
 3. Invoke vrep.sh from the V-REP directory. This will start the V-REP UI.
 
-4. Go to 'File > Open Scene' and select the scene.ttt file which is part of this src repository.
+4. Go to 'File > Open Scene' and select the 'scene.ttt' file which is provided with my codebase.
 
 This will open the scene which we will use for training.
 

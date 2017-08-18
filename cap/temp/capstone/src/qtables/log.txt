@@ -1,0 +1,101 @@
+[2017-08-17 15:59:42.193730] There are 62 actions.
+[2017-08-17 15:59:42.193897] There are 611521 states.
+[2017-08-17 15:59:42.554598] %%%%%%%%%%%%%%%%%%%%%%%%% Main starts %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[2017-08-17 15:59:42.554771] Epsilon: 0.3
+[2017-08-17 15:59:42.554861] Epsilon Decay: 3e-05
+[2017-08-17 15:59:42.554939] Q Init: 0.0
+[2017-08-17 15:59:42.555018] Discount: 0.8
+[2017-08-17 15:59:42.555095] Learning Rate: 0.5
+[2017-08-17 15:59:42.555171] Max Episodes: 10000
+[2017-08-17 15:59:42.555247] Max Actions/Episodes: 100
+[2017-08-17 15:59:42.555338] Env Dimensions: [[Decimal('-0.32'), Decimal('-0.19')], [Decimal('-0.12'), Decimal('-0.05')], [Decimal('0.00'), Decimal('0.15')]]
+[2017-08-17 15:59:42.555441] =============================================> Episode 10000
+[2017-08-17 15:59:42.555600] Initializing episode
+[2017-08-17 15:59:48.845757] Exploring...
+[2017-08-17 15:59:48.846820] Action: Moving claw [Decimal('-0.22'), Decimal('-0.10'), Decimal('0.04')]
+[2017-08-17 15:59:50.086603] Penalty: Bin has shifted, terminating
+[2017-08-17 15:59:50.163051] Q-Value: S:108686, A:51, R:-10, S`:108809, TE: -10.0, Q:0.0, Q`:-5.0
+[2017-08-17 15:59:51.019829] =============================================> Episode 9999
+[2017-08-17 15:59:51.020114] Initializing episode
+[2017-08-17 15:59:56.248501] Exploiting...
+[2017-08-17 15:59:56.248854] Action: Engaging/Disengaging claw True
+[2017-08-17 15:59:57.153739] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 15:59:57.154047] Q-Value: S:108686, A:0, R:-3, S`:108686, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 15:59:57.154212] Exploring...
+[2017-08-17 15:59:57.154415] Action: Moving claw [Decimal('-0.26'), Decimal('-0.10'), Decimal('0.02')]
+[2017-08-17 15:59:58.372324] Penalty: Bin has shifted, terminating
+[2017-08-17 15:59:58.372558] Q-Value: S:108686, A:26, R:-10, S`:108744, TE: -10.0, Q:0.0, Q`:-5.0
+[2017-08-17 15:59:59.220040] =============================================> Episode 9998
+[2017-08-17 15:59:59.220216] Initializing episode
+[2017-08-17 16:00:04.257873] Exploring...
+[2017-08-17 16:00:04.258096] Action: Moving claw [Decimal('-0.24'), Decimal('-0.10'), Decimal('0.12')]
+[2017-08-17 16:00:05.510413] Q-Value: S:109134, A:43, R:-1, S`:108781, TE: -1.0, Q:0.0, Q`:-0.5
+[2017-08-17 16:00:05.510596] Exploiting...
+[2017-08-17 16:00:05.510721] Action: Engaging/Disengaging claw True
+[2017-08-17 16:00:06.459158] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:06.459538] Q-Value: S:108781, A:0, R:-3, S`:108781, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 16:00:06.459760] Exploiting...
+[2017-08-17 16:00:06.459968] Action: Engaging/Disengaging claw False
+[2017-08-17 16:00:07.411941] Q-Value: S:108781, A:1, R:-1, S`:108781, TE: -1.0, Q:0.0, Q`:-0.5
+[2017-08-17 16:00:07.412123] Exploiting...
+[2017-08-17 16:00:07.412257] Action: Moving claw [Decimal('-0.30'), Decimal('-0.10'), Decimal('0.02')]
+[2017-08-17 16:00:08.624484] Penalty: Cylinder has fallen, terminating
+[2017-08-17 16:00:08.624701] Q-Value: S:108781, A:2, R:-10, S`:121673, TE: -10.0, Q:0.0, Q`:-5.0
+[2017-08-17 16:00:09.495826] =============================================> Episode 9997
+[2017-08-17 16:00:09.496017] Initializing episode
+[2017-08-17 16:00:23.328730] There are 62 actions.
+[2017-08-17 16:00:23.328889] There are 611521 states.
+[2017-08-17 16:00:26.307022] %%%%%%%%%%%%%%%%%%%%%%%%% Main starts %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+[2017-08-17 16:00:26.307303] Epsilon: 0.3
+[2017-08-17 16:00:26.307486] Epsilon Decay: 3e-05
+[2017-08-17 16:00:26.307644] Q Init: 0.0
+[2017-08-17 16:00:26.307789] Discount: 0.8
+[2017-08-17 16:00:26.307931] Learning Rate: 0.5
+[2017-08-17 16:00:26.308069] Max Episodes: 10000
+[2017-08-17 16:00:26.308205] Max Actions/Episodes: 100
+[2017-08-17 16:00:26.308367] Env Dimensions: [[Decimal('-0.32'), Decimal('-0.19')], [Decimal('-0.12'), Decimal('-0.05')], [Decimal('0.00'), Decimal('0.15')]]
+[2017-08-17 16:00:26.308516] =============================================> Episode 10000
+[2017-08-17 16:00:26.308656] Initializing episode
+[2017-08-17 16:00:29.084400] Exploring...
+[2017-08-17 16:00:29.085172] Action: Engaging/Disengaging claw True
+[2017-08-17 16:00:30.035998] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:30.041158] Q-Value: S:108686, A:0, R:-3, S`:109134, TE: -1.5, Q:-1.5, Q`:-2.25
+[2017-08-17 16:00:30.041352] Exploiting...
+[2017-08-17 16:00:30.046286] Action: Engaging/Disengaging claw True
+[2017-08-17 16:00:30.968741] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:30.969039] Q-Value: S:109134, A:0, R:-3, S`:108686, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 16:00:30.969204] Exploring...
+[2017-08-17 16:00:30.969403] Action: Moving claw [Decimal('-0.26'), Decimal('-0.10'), Decimal('0.10')]
+[2017-08-17 16:00:32.145628] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:32.145851] Q-Value: S:108686, A:30, R:-3, S`:108748, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 16:00:32.146049] Exploiting...
+[2017-08-17 16:00:32.146160] Action: Engaging/Disengaging claw True
+[2017-08-17 16:00:33.083259] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:33.083694] Q-Value: S:108748, A:0, R:-3, S`:108748, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 16:00:33.083963] Exploring...
+[2017-08-17 16:00:33.084253] Action: Moving claw [Decimal('-0.26'), Decimal('-0.08'), Decimal('0.08')]
+[2017-08-17 16:00:34.355574] Penalty: Claw is engaged but cylinder is not in claw
+[2017-08-17 16:00:34.355849] Q-Value: S:108748, A:35, R:-3, S`:108755, TE: -3.0, Q:0.0, Q`:-1.5
+[2017-08-17 16:00:34.356005] Exploring...
+[2017-08-17 16:00:34.356194] Action: Moving claw [Decimal('-0.24'), Decimal('-0.10'), Decimal('0.04')]
+[2017-08-17 16:00:35.601830] Penalty: Bin has shifted, terminating
+[2017-08-17 16:00:35.602087] Q-Value: S:108755, A:39, R:-10, S`:108777, TE: -10.0, Q:0.0, Q`:-5.0
+[2017-08-17 16:00:36.604429] =============================================> Episode 9999
+[2017-08-17 16:00:36.604732] Initializing episode
+[2017-08-17 16:00:39.806395] Exploring...
+[2017-08-17 16:00:39.806593] Action: Moving claw [Decimal('-0.26'), Decimal('-0.10'), Decimal('0.02')]
+[2017-08-17 16:00:41.012954] Penalty: Cylinder has fallen, terminating
+[2017-08-17 16:00:41.013185] Q-Value: S:108686, A:26, R:-10, S`:108744, TE: -5.0, Q:-5.0, Q`:-7.5
+[2017-08-17 16:00:42.000396] =============================================> Episode 9998
+[2017-08-17 16:00:42.000570] Initializing episode
+[2017-08-17 16:00:44.694303] Exploring...
+[2017-08-17 16:00:44.694561] Action: Moving claw [Decimal('-0.24'), Decimal('-0.08'), Decimal('0.02')]
+[2017-08-17 16:00:45.913532] Penalty: Bin has shifted, terminating
+[2017-08-17 16:00:45.913786] Q-Value: S:108686, A:44, R:-10, S`:108784, TE: -10.0, Q:0.0, Q`:-5.0
+[2017-08-17 16:00:46.952447] =============================================> Episode 9997
+[2017-08-17 16:00:46.952644] Initializing episode
+[2017-08-17 16:00:49.761298] Exploiting...
+[2017-08-17 16:00:49.761475] Action: Engaging/Disengaging claw False
+[2017-08-17 16:00:50.669389] Q-Value: S:108686, A:1, R:-1, S`:108686, TE: -1.0, Q:0.0, Q`:-0.5
+[2017-08-17 16:00:50.669616] Exploiting...
+[2017-08-17 16:00:50.669795] Action: Moving claw [Decimal('-0.30'), Decimal('-0.10'), Decimal('0.02')]
